@@ -6,18 +6,19 @@ Este arquivo documenta o mapeamento e o progresso do projeto, que visa criar uma
 ---
 
 ## 1. Arquitetura Inicial
-- Múltiplos serviços (exemplo: Service A, Service B) comunicando entre si (HTTP/gRPC).
+- Múltiplos serviços (exemplo: Service A, Service B, Service C) comunicando entre si (HTTP/gRPC).
 - Cada serviço será containerizado (Docker) e orquestrado via Kubernetes.
 - Helm charts para deploy/configuração dos serviços e ferramentas.
 - Observabilidade:
   - Grafana para dashboards
   - Tempo para traces
   - Loki para logs
+  - Promtail para envio de logs
 
 ## 2. Componentes do Projeto
 - Serviços de exemplo instrumentados com OpenTelemetry
 - Helm charts customizados para cada serviço
-- Helm charts para Grafana, Tempo e Loki (charts oficiais)
+- Helm charts para Grafana, Promtail, Tempo e Loki (charts oficiais)
 - Configuração do Grafana para visualizar traces (Tempo) e logs (Loki)
 - Documentação de deploy e arquitetura
 
