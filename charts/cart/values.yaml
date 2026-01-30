@@ -1,0 +1,5 @@
+image:
+  repository: elizaaugusta/cart
+  tag: latest
+service:
+  port: 5001

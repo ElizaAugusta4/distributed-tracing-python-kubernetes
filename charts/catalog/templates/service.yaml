@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog
+spec:
+  selector:
+    app: catalog
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000

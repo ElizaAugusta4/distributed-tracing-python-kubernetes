@@ -1,0 +1,10 @@
+image:
+  repository: grafana/tempo
+  tag: 2.4.1
+
+config:
+  storage:
+    trace:
+      backend: local
+      local:
+        path: /tmp/tempo

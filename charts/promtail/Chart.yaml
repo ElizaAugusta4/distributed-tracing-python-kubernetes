@@ -1,0 +1,5 @@
+apiVersion: v2
+name: promtail
+version: 0.1.0
+description: Helm chart para o agente Promtail
+appVersion: "2.9.0"

@@ -1,0 +1,5 @@
+image:
+  repository: elizaaugusta/catalog
+  tag: latest
+service:
+  port: 5000

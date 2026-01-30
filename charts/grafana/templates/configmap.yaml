@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-provisioning
+  namespace: {{ .Release.Namespace }}
+data:
+  datasources.yaml: |-
+    {{ .Files.Get "datasources/datasources.yaml" | nindent 4 }}
+  dashboards.yaml: |-
+    {{ .Files.Get "dashboards/dashboards.yaml" | nindent 4 }}

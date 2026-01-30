@@ -1,0 +1,5 @@
+apiVersion: v2
+name: order
+version: 0.1.0
+description: Helm chart para o serviço Order
+appVersion: "1.0"

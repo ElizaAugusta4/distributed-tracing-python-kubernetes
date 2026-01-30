@@ -1,0 +1,5 @@
+image:
+  repository: grafana/promtail
+  tag: 2.9.0
+config:
+  lokiAddress: http://loki:3100/loki/api/v1/push

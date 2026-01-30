@@ -1,0 +1,19 @@
+{
+  "annotations": {"list": []},
+  "panels": [
+    {
+      "type": "table",
+      "title": "Traces com erro",
+      "datasource": "Tempo",
+      "targets": [{"query": "status.code = 'ERROR'"}]
+    },
+    {
+      "type": "logs",
+      "title": "Logs correlacionados (Loki)",
+      "datasource": "Loki",
+      "targets": [{"expr": "{trace_id=\"$trace_id\"}"}]
+    }
+  ],
+  "title": "Correlação Trace/Log",
+  "refresh": "30s"
+}

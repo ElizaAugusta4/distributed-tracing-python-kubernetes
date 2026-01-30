@@ -1,0 +1,5 @@
+apiVersion: v2
+name: catalog
+version: 0.1.0
+description: Helm chart para o serviço Catalog
+appVersion: "1.0"

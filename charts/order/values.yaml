@@ -1,0 +1,5 @@
+image:
+  repository: elizaaugusta/order
+  tag: latest
+service:
+  port: 5002
