@@ -1,10 +1,9 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: promtail
   namespace: {{ .Release.Namespace }}
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: promtail
@@ -21,7 +20,12 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/promtail
+            - name: varlog
+              mountPath: /var/log
       volumes:
         - name: config
           configMap:
             name: promtail-config
+        - name: varlog
+          hostPath:
+            path: /var/log

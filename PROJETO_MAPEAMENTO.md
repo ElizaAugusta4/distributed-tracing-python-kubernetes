@@ -39,8 +39,12 @@ Este arquivo documenta o mapeamento e o progresso do projeto, que visa criar uma
 -  Validação dos Serviços da Loja, se estão funcionais
 -  Criar namespace para stack de observabilidade 
 -  Validar que as aplicacoes conseguem mandar traces para o tempo
--  Validar que os datasourcers do Grafana: Tempo e Loki estão se conectando
+-  Validar que os datasourcers do Grafana: Tempo e Loki estão se conectando com o grafana.
 -  Acompanhar pelo Explorer com o Datasource Tempo o fluxo da requisição, onde as apis interagem.
+-  Validar que o promtail e o loki se comunicam
+-  Validar que o promtail está enviando logs para o loki
+-  Validar que o Loki está apresentando as labels corretamenta no Explorer 
+-  Garantir que as APPs estão mandando Traces ID
 -  Criação de Dashboards importante para acompanhar a confiabilidade das apis
 ---
 

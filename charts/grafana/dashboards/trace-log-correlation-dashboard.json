@@ -5,7 +5,7 @@
       "type": "table",
       "title": "Traces com erro",
       "datasource": "Tempo",
-      "targets": [{"query": "status.code = 'ERROR'"}]
+      "targets": [{"query": "{.http.status_code = 500}"}]
     },
     {
       "type": "logs",
