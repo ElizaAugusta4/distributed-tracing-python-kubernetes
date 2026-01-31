@@ -6,13 +6,8 @@ from common.otel import setup_otel
 app = Flask(__name__)
 products = []
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)s %(name)s %(message)s'
-)
-logger = logging.getLogger("catalog-service")
-
 setup_otel(app, "catalog-service")
+logger = logging.getLogger("catalog-service")
 
 
 @app.route('/products', methods=['GET'])

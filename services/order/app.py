@@ -54,9 +54,10 @@ def create_order():
     return jsonify(order), 201
 
 
-@app.get("/error")
-def error():
-    1 / 0
+@app.errorhandler(Exception)
+def handle_exception(e):
+    logger.error(f"Erro capturado: {e}")
+    return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
