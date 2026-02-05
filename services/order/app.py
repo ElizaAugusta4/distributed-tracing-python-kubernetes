@@ -21,7 +21,7 @@ CART_URL = "http://cart:5001/cart"
 
 @app.route('/orders', methods=['GET'])
 def list_orders():
-    logger.info("Listando pedidos")
+    logger.info(f"service=order-service status_code=200 trace_id={request.headers.get('traceparent', '')} Listando pedidos")
     return jsonify(orders)
 
 
@@ -50,13 +50,13 @@ def create_order():
     }
 
     orders.append(order)
-    logger.info(f"Pedido criado: {order}")
+    logger.info(f"service=order-service status_code=201 trace_id={request.headers.get('traceparent', '')} Pedido criado: {order}")
     return jsonify(order), 201
 
 
 @app.errorhandler(Exception)
 def handle_exception(e):
-    logger.error(f"Erro capturado: {e}")
+    logger.error(f"service=order-service status_code=500 trace_id={request.headers.get('traceparent', '')} Erro capturado: {e}")
     return jsonify({"error": str(e)}), 500
 
 

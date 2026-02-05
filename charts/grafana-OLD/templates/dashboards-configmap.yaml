@@ -4,14 +4,14 @@ metadata:
   name: grafana-dashboards
   namespace: {{ .Release.Namespace }}
 data:
-  overview-dashboard.json: |
-{{ .Files.Get "dashboards/overview-dashboard.json" | indent 4 }}
-  latency-errors-dashboard.json: |
-{{ .Files.Get "dashboards/latency-errors-dashboard.json" | indent 4 }}
+  incident-erros-logs-traces.json: |
+{{ .Files.Get "dashboards/incident-erros-logs-traces.json" | indent 4 }}
+  prometheus-metrics-dashboard.json: |
+{{ .Files.Get "dashboards/prometheus-metrics-dashboard.json" | indent 4 }}
   trace-log-correlation-dashboard.json: |
 {{ .Files.Get "dashboards/trace-log-correlation-dashboard.json" | indent 4 }}
-  outliers-dashboard.json: |
-{{ .Files.Get "dashboards/outliers-dashboard.json" | indent 4 }}
+  prometheus-cluster-dashboard.json: |
+{{ .Files.Get "dashboards/prometheus-cluster-dashboard.json" | indent 4 }}
 ---
 apiVersion: v1
 kind: ConfigMap

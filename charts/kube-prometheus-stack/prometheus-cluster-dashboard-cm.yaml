@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-cluster-dashboard
+  namespace: observability
+  labels:
+    grafana_dashboard: "1"
+data:
+  prometheus-cluster-dashboard.json: |
+    {"annotations":{"list":[]},"panels":[{"type":"graph","title":"CPU Total (Cluster)","datasource":"Prometheus","targets":[{"expr":"sum(rate(container_cpu_usage_seconds_total[5m]))","interval":"1m"}],"gridPos":{"h":8,"w":12,"x":0,"y":0}},{"type":"graph","title":"Memory Total (Cluster)","datasource":"Prometheus","targets":[{"expr":"sum(container_memory_usage_bytes)","interval":"1m"}],"gridPos":{"h":8,"w":12,"x":0,"y":8}},{"type":"graph","title":"Pods Running","datasource":"Prometheus","targets":[{"expr":"sum(kube_pod_status_phase{phase=\"Running\"})","interval":"1m"}],"gridPos":{"h":8,"w":12,"x":0,"y":16}},{"type":"graph","title":"Nodes Ready","datasource":"Prometheus","targets":[{"expr":"sum(kube_node_status_condition{condition=\"Ready\",status=\"true\"})","interval":"1m"}],"gridPos":{"h":8,"w":12,"x":0,"y":24}},{"type":"graph","title":"Network RX (Cluster)","datasource":"Prometheus","targets":[{"expr":"sum(rate(container_network_receive_bytes_total[5m]))","interval":"1m"}],"gridPos":{"h":8,"w":12,"x":0,"y":32}},{"type":"graph","title":"Network TX (Cluster)","datasource":"Prometheus","targets":[{"expr":"sum(rate(container_network_transmit_bytes_total[5m]))","interval":"1m"}],"gridPos":{"h":8,"w":12,"x":0,"y":40}},{"type":"table","title":"Cluster Component Health","datasource":"Prometheus","targets":[{"expr":"up"}],"gridPos":{"h":8,"w":12,"x":0,"y":48}},{"type":"table","title":"Cluster Events","datasource":"Prometheus","targets":[{"expr":"kube_event_reason"}],"gridPos":{"h":8,"w":12,"x":0,"y":56}}],"title":"Cluster Metrics (Prometheus)","refresh":"30s"}

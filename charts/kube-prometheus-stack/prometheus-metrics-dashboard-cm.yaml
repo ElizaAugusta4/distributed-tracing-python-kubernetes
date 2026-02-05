@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-metrics-dashboard
+  namespace: observability
+  labels:
+    grafana_dashboard: "1"
+data:
+  prometheus-metrics-dashboard.json: |
+    {"annotations":{"list":[]},"panels":[{"type":"graph","title":"CPU Usage","datasource":"Prometheus","targets":[{"expr":"process_cpu_seconds_total","interval":"1m"}],"gridPos":{"h":8,"w":12,"x":0,"y":0}},{"type":"graph","title":"Memory Usage","datasource":"Prometheus","targets":[{"expr":"process_resident_memory_bytes","interval":"1m"}],"gridPos":{"h":8,"w":12,"x":0,"y":8}},{"type":"table","title":"Prometheus Targets","datasource":"Prometheus","targets":[{"expr":"up"}],"gridPos":{"h":8,"w":12,"x":0,"y":16}}],"title":"Prometheus Metrics","refresh":"30s"}

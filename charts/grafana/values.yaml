@@ -1,9 +1,0 @@
-image:
-  repository: grafana/grafana
-  tag: 10.2.2
-service:
-  port: 3000
-
-dashboards:
-  enabled: true
-  path: /var/lib/grafana/dashboards

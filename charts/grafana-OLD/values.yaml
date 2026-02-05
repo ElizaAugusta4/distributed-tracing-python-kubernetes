@@ -1,0 +1,17 @@
+image:
+  repository: grafana/grafana
+  tag: 10.2.2
+service:
+  port: 3000
+
+grafana:
+  dashboards:
+    default:
+      incident-erros-logs-traces:
+        file: dashboards/incident-erros-logs-traces.json
+      prometheus-cluster-dashboard:
+        file: dashboards/prometheus-cluster-dashboard.json
+      prometheus-metrics-dashboard:
+        file: dashboards/prometheus-metrics-dashboard.json
+      trace-log-correlation-dashboard:
+        file: dashboards/trace-log-correlation-dashboard.json

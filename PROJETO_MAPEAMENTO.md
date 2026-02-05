@@ -46,5 +46,8 @@ Este arquivo documenta o mapeamento e o progresso do projeto, que visa criar uma
 -  Validar que o Loki está apresentando as labels corretamenta no Explorer 
 -  Garantir que as APPs estão mandando Traces ID
 -  Criação de Dashboards importante para acompanhar a confiabilidade das apis
+-  Adicionar o kube-prometheus-stack de observabilidade
+-  Migrar Datasourcers do Grafana anterior para o novo
+-  Migrar Dashboards para o kube-promtheus-stack
 ---
 

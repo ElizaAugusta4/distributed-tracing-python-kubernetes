@@ -36,7 +36,7 @@ Este projeto demonstra uma arquitetura de microserviços Python (catalog, cart, 
    kubectl create namespace virtual-store
    kubectl create namespace observability
    ```
-3. **Instale os charts via Helm:**
+3. **Instale os charts via Helm e aplique os dashboards:**
    ```sh
    helm upgrade --install tempo ./charts/tempo --namespace observability
    helm upgrade --install loki ./charts/loki --namespace observability
@@ -44,9 +44,19 @@ Este projeto demonstra uma arquitetura de microserviços Python (catalog, cart, 
    helm upgrade --install catalog ./charts/catalog --namespace virtual-store
    helm upgrade --install cart ./charts/cart --namespace virtual-store
    helm upgrade --install order ./charts/order --namespace virtual-store
+   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+   helm repo update
+   helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -n observability -f ./kube-prometheus-stack/values.yaml
+
+   # Aplique os ConfigMaps dos dashboards customizados
+   kubectl apply -f ./kube-prometheus-stack/incident-erros-logs-traces-dashboard-cm.yaml -n observability
+   kubectl apply -f ./kube-prometheus-stack/prometheus-cluster-dashboard-cm.yaml -n observability
+   kubectl apply -f ./kube-prometheus-stack/prometheus-metrics-dashboard-cm.yaml -n observability
+   kubectl apply -f ./kube-prometheus-stack/trace-log-correlation-dashboard-cm.yaml -n observability
    ```
 4. **Acesse o Grafana:**
-   - Usuário padrão: `admin` / `admin`
+   - Usuário padrão: `admin`
+   - Senha: Verifique no secret do grafana a senha 
    - URL: http://localhost:3000
 
 ## Troubleshooting

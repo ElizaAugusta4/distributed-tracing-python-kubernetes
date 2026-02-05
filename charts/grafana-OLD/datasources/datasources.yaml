@@ -10,3 +10,8 @@ datasources:
     access: proxy
     url: http://tempo:3200
     isDefault: false
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://kube-prometheus-stack-prometheus:9090
+    isDefault: false

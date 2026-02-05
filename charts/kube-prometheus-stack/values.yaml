@@ -1,0 +1,21 @@
+grafana:
+  dashboardsProvider:
+    enabled: true
+
+  sidecar:
+    dashboards:
+      enabled: true
+
+
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki:3100
+      access: proxy
+      isDefault: false
+
+    - name: Tempo
+      type: tempo
+      url: http://tempo:3200
+      access: proxy
+      isDefault: false

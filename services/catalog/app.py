@@ -12,15 +12,17 @@ logger = logging.getLogger("catalog-service")
 
 @app.route('/products', methods=['GET'])
 def list_products():
-    logger.info("Listando produtos")
+    from flask import request
+    logger.info(f"service=catalog-service status_code=200 trace_id={request.headers.get('traceparent', '')} Listando produtos")
     return jsonify(products)
 
 
 @app.route('/products', methods=['POST'])
 def add_product():
+    from flask import request
     data = request.json
     products.append(data)
-    logger.info(f"Produto adicionado: {data}")
+    logger.info(f"service=catalog-service status_code=201 trace_id={request.headers.get('traceparent', '')} Produto adicionado: {data}")
     return jsonify(data), 201
 
 
