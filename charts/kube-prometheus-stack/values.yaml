@@ -1,4 +1,6 @@
 grafana:
+  podLabels:
+    gitops-demo: "true"
   dashboardsProvider:
     enabled: true
 
