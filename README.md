@@ -69,13 +69,11 @@ Esta opcao deixa o deploy com cara de producao, usando GitOps para sincronizar o
    kubectl create namespace argocd
    helm upgrade --install argocd argo/argo-cd -n argocd -f ./argocd/values.yaml
    ```
-2. **Ajuste o repoURL nos Applications:**
-   - Edite os arquivos em [argocd/applications](argocd/applications) e substitua `https://github.com/your-org/distributed-tracing-python-kubernetes` pelo seu repo.
-3. **Aplique os Applications:**
+2. **Aplique os Applications:**
    ```sh
    kubectl apply -n argocd -f ./argocd/applications
    ```
-4. **Acesso ao ArgoCD:**
+3. **Acesso ao ArgoCD:**
    - Ingress padrao: http://argocd.local (requer ingress controller)
    - Alternativa via port-forward:
      ```sh
