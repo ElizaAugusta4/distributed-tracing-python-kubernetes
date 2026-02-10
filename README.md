@@ -59,6 +59,29 @@ Este projeto demonstra uma arquitetura de microserviços Python (catalog, cart, 
    - Senha: Verifique no secret do grafana a senha 
    - URL: http://localhost:3000
 
+## GitOps com ArgoCD (fase 1)
+Esta opcao deixa o deploy com cara de producao, usando GitOps para sincronizar os charts.
+
+1. **Instale o ArgoCD via Helm:**
+   ```sh
+   helm repo add argo https://argoproj.github.io/argo-helm
+   helm repo update
+   kubectl create namespace argocd
+   helm upgrade --install argocd argo/argo-cd -n argocd -f ./argocd/values.yaml
+   ```
+2. **Ajuste o repoURL nos Applications:**
+   - Edite os arquivos em [argocd/applications](argocd/applications) e substitua `https://github.com/your-org/distributed-tracing-python-kubernetes` pelo seu repo.
+3. **Aplique os Applications:**
+   ```sh
+   kubectl apply -n argocd -f ./argocd/applications
+   ```
+4. **Acesso ao ArgoCD:**
+   - Ingress padrao: http://argocd.local (requer ingress controller)
+   - Alternativa via port-forward:
+     ```sh
+     kubectl port-forward svc/argocd-server -n argocd 8080:80
+     ```
+
 ## Troubleshooting
 - Veja o arquivo `PROBLEMAS_ENCONTRADOS.md` para um histórico dos principais desafios e soluções.
 - Use os dashboards provisionados para investigação rápida de incidentes.

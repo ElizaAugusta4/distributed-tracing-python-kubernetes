@@ -3,8 +3,6 @@
 ## Visão Geral
 Este arquivo documenta o mapeamento e o progresso do projeto, que visa criar uma arquitetura de múltiplos serviços monitorados por Grafana, Tempo e Loki, utilizando Kubernetes e Helm charts.
 
----
-
 ## 1. Arquitetura Inicial
 - Múltiplos serviços (exemplo: Service A, Service B, Service C) comunicando entre si (HTTP/gRPC).
 - Cada serviço será containerizado (Docker) e orquestrado via Kubernetes.
@@ -49,5 +47,28 @@ Este arquivo documenta o mapeamento e o progresso do projeto, que visa criar uma
 -  Adicionar o kube-prometheus-stack de observabilidade
 -  Migrar Datasourcers do Grafana anterior para o novo
 -  Migrar Dashboards para o kube-promtheus-stack
+-  Criar SLIs e SLOs
+-  Montar Runbook, Playbook, Handbook
+-  GitOps com ArgoCD para deploy automatico
+-  Hardenizacao dos servicos (probes, resources, securityContext)
+-  Autoscaling e PDB por servico
 ---
+## 4. Critério de Saúde e Painel de Confiabilidade das APIs
+
+Para garantir a confiabilidade do sistema, cada API possui como SLI, uma métrica principal monitorada via Prometheus e Grafana:
+
+- **order**: taxa de erro 5xx
+- **cart**: taxa de erro 5xx
+- **catalog**: taxa de erro 5xx
+
+Essas métricas são exibidas no painel "Erros 5xx por Serviço" do dashboard `incident-erros-logs-traces` no Grafana.
+
+### Critério de SLO das APIs
+
+- **order**: considerada saudável quando a taxa de erro 5xx é menor que 1% das requisições nos últimos 5 minutos.
+- **cart**: considerada saudável quando a taxa de erro 5xx é menor que 1% das requisições nos últimos 5 minutos.
+- **catalog**: considerada saudável quando a taxa de erro 5xx é menor que 1% das requisições nos últimos 5 minutos.
+
+**Como visualizar:**
+No Grafana, acesse o dashboard "Incidente – Erros, Logs e Traces" e observe o painel "Erros 5xx por Serviço". Se o valor estiver próximo de zero, a API está saudável.
 

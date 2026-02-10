@@ -1,0 +1,12 @@
+server:
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - argocd.local
+    tls: []
+configs:
+  params:
+    server.insecure: true

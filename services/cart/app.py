@@ -29,7 +29,11 @@ def add_to_cart(user_id):
     carts.setdefault(user_id, []).append(data)
     logger.info(f"service=cart-service status_code=201 trace_id={request.headers.get('traceparent', '')} Produto adicionado ao carrinho {user_id}: {data}")
     return jsonify(data), 201
-    return jsonify(data), 201
+
+
+@app.route('/healthz', methods=['GET'])
+def healthz():
+    return jsonify({"status": "ok"}), 200
 
 
 if __name__ == "__main__":
