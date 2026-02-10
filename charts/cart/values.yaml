@@ -2,7 +2,7 @@ image:
   repository: elizaaugusta/cart
   tag: latest
   pullPolicy: IfNotPresent
-replicaCount: 2
+replicaCount: 3
 service:
   port: 5001
 serviceAccount:
