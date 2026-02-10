@@ -107,6 +107,46 @@ data:
             "tooltip": {
               "mode": "single",
               "sort": "none"
+            },
+            "alert": {
+              "alertRuleTags": {},
+              "conditions": [
+                {
+                  "evaluator": {
+                    "params": [
+                      10
+                    ],
+                    "type": "gt"
+                  },
+                  "operator": {
+                    "type": "and"
+                  },
+                  "query": {
+                    "params": [
+                      "A",
+                      "last"
+                    ]
+                  },
+                  "reducer": {
+                    "params": [],
+                    "type": "last"
+                  },
+                  "type": "query"
+                }
+              ],
+              "data": [
+                {
+                  "refId": "A",
+                  "queryType": "range"
+                }
+              ],
+              "executionErrorState": "alerting",
+              "for": "5m",
+              "frequency": "1m",
+              "handler": 1,
+              "name": "Erros 5xx por Serviço acima de 10 em 5m",
+              "noDataState": "no_data",
+              "notifications": []
             }
           },
           "targets": [

@@ -1,0 +1,33 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: slo-alerts
+  namespace: observability
+  labels:
+    slo-alert: "true"
+spec:
+  groups:
+    - name: slo-api
+      rules:
+        - record: api:http_error_ratio:rate5m
+          expr: |
+            sum(rate(http_server_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(http_server_requests_total[5m]))
+
+        - record: api:http_error_ratio:rate1h
+          expr: |
+            sum(rate(http_server_requests_total{status=~"5.."}[1h]))
+            /
+            sum(rate(http_server_requests_total[1h]))
+
+        - alert: SLOFastBurn
+          expr: (api:http_error_ratio:rate5m / 0.01) > 14.4
+          for: 5m
+          labels:
+            severity: critical
+            env: dev
+          annotations:
+            summary: "SLO burn rate rápido"
+            description: "Erros 5xx acima do orçamento (5m)"
+
