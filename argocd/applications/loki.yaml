@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/your-org/distributed-tracing-python-kubernetes
+    repoURL:  https://github.com/ElizaAugusta4/distributed-tracing-python-kubernetes
     targetRevision: HEAD
     path: charts/loki
   destination:
