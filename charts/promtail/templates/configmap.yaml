@@ -8,20 +8,25 @@ data:
     server:
       http_listen_port: 9080
       grpc_listen_port: 0
+    {{- if .Values.config.positions }}
+    positions:
+{{ toYaml .Values.config.positions | nindent 6 }}
+    {{- else }}
     positions:
       filename: /tmp/positions.yaml
+    {{- end }}
+    {{- if .Values.config.clients }}
+    clients:
+{{ toYaml .Values.config.clients | nindent 6 }}
+    {{- else if .Values.config.lokiAddress }}
     clients:
       - url: {{ .Values.config.lokiAddress | quote }}
+    {{- else }}
+    clients: []
+    {{- end }}
+    {{- if and .Values.config.snippets .Values.config.snippets.scrapeConfigs }}
     scrape_configs:
-      - job_name: kubernetes-pods
-        kubernetes_sd_configs:
-          - role: pod
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_pod_label_app]
-            target_label: app
-          - source_labels: [__meta_kubernetes_namespace]
-            target_label: namespace
-          - source_labels: [__meta_kubernetes_pod_name]
-            target_label: pod
-        pipeline_stages:
-          - docker: {}
+{{ .Values.config.snippets.scrapeConfigs | nindent 6 }}
+    {{- else }}
+    scrape_configs: []
+    {{- end }}

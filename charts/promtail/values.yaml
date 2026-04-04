@@ -11,7 +11,7 @@ config:
 
   snippets:
     pipelineStages:
-      - docker: {}
+      - cri: {}
 
     scrapeConfigs: |
       - job_name: kubernetes-pods
@@ -30,4 +30,4 @@ config:
             target_label: __path__
             replacement: /var/log/pods/*$1*/$2/*.log
         pipeline_stages:
-          - docker: {}
+          - cri: {}
