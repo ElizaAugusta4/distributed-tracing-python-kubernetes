@@ -151,7 +151,7 @@ data:
           },
           "targets": [
             {
-              "expr": "sum by (service) (count_over_time({service=~\"$service\", status_code=~\"5..\"}[5m]))",
+              "expr": "sum by (service) (count_over_time({namespace=~\"$namespace\", app=~\"$app\"} | regexp \"service=(?P<service>[^\\s]+).*status_code=(?P<status_code>\\\\d{3})\" | status_code=~\"5..\"[5m]))",
               "refId": "A"
             }
           ],
@@ -187,7 +187,7 @@ data:
                 "uid": "P8E80F9AEF21F6940"
               },
               "editorMode": "code",
-              "expr": "{service=~\"$service\", status_code=~\"5..\"}",
+              "expr": "{namespace=~\"$namespace\", app=~\"$app\"} | regexp \"service=(?P<service>[^\\s]+).*status_code=(?P<status_code>\\\\d{3})\" | status_code=~\"5..\"",
               "queryType": "range",
               "refId": "A"
             }
@@ -270,7 +270,7 @@ data:
                 }
               ],
               "limit": 20,
-              "query": "{\n  resource.service.name =~ \"$service\"\n  && span.http.status_code >= 500\n  && span.http.status_code < 600\n}",
+              "query": "{\n  resource.service.name =~ \"(${app:regex})-service\"\n  && span.http.status_code >= 500\n  && span.http.status_code < 600\n}",
               "queryType": "traceql",
               "refId": "A",
               "tableType": "traces"
@@ -299,12 +299,41 @@ data:
             "definition": "",
             "hide": 0,
             "includeAll": true,
-            "label": "Serviço",
-            "multi": true,
-            "name": "service",
+            "label": "Namespace",
+            "multi": false,
+            "name": "namespace",
             "options": [],
             "query": {
-              "label": "service",
+              "label": "namespace",
+              "type": 1
+            },
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 0,
+            "type": "query"
+          },
+          {
+            "allValue": ".+",
+            "current": {
+              "selected": false,
+              "text": "All",
+              "value": "$__all"
+            },
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            },
+            "definition": "",
+            "hide": 0,
+            "includeAll": true,
+            "label": "App",
+            "multi": true,
+            "name": "app",
+            "options": [],
+            "query": {
+              "label": "app",
+              "stream": "{namespace=~\"$namespace\"}",
               "type": 1
             },
             "refresh": 1,

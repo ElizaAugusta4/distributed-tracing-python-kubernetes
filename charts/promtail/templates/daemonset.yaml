@@ -6,6 +6,7 @@ metadata:
   labels:
     app: promtail
 spec:
+  # DaemonSet garante 1 Pod por nó (ideal para coletar logs locais do nó).
   selector:
     matchLabels:
       app: promtail
@@ -14,8 +15,10 @@ spec:
       labels:
         app: promtail
     spec:
+      # ServiceAccount usado para o Promtail consultar a API do Kubernetes (service discovery).
       serviceAccountName: promtail
-      tolerations:                       
+      # Permite rodar também no nó control-plane/master, que normalmente tem taint NoSchedule.
+      tolerations:
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
@@ -26,17 +29,23 @@ spec:
         - name: promtail
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           args:
+            # Aponta o arquivo de configuração montado via ConfigMap.
             - -config.file=/etc/promtail/promtail.yaml
           env:
+            # Força o HOSTNAME a ser o nome do nó (spec.nodeName).
+            # Isso é importante porque o discovery costuma filtrar pods por nó (spec.nodeName=<nó>). 
             - name: HOSTNAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
           volumeMounts:
+            # Config do Promtail (promtail.yaml).
             - name: config
               mountPath: /etc/promtail
+            # Arquivo de positions (offsets) para o Promtail lembrar o que já leu.
             - name: positions
               mountPath: /tmp
+            # Logs dos pods no nó (onde o container runtime escreve os logs do Kubernetes).
             - name: varlogpods
               mountPath: /var/log/pods
               readOnly: true
@@ -46,7 +55,8 @@ spec:
           configMap:
             name: promtail-config
         - name: positions
-          hostPath:                       
+          # positions fica no host para sobreviver a restart do Pod do Promtail.
+          hostPath:
             path: /tmp/promtail-positions
         - name: varlogpods
           hostPath:

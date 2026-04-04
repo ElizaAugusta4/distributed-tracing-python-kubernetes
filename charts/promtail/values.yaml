@@ -1,18 +1,23 @@
 image:
+  # Imagem do Promtail.
   repository: grafana/promtail
   tag: 2.9.0
 
 config:
+  # Para onde o Promtail envia os logs.
   clients:
     - url: http://loki:3100/loki/api/v1/push
 
+  # Onde o Promtail guarda o "positions" (offset do tail). No nosso DaemonSet, /tmp é persistido no nó via hostPath.
   positions:
     filename: /tmp/positions.yaml
 
   snippets:
+    # Pipeline de parsing de logs. Em clusters kind/containerd use 'cri' (em vez de 'docker').
     pipelineStages:
       - cri: {}
 
+    # scrapeConfigs vira o scrape_configs do promtail.yaml (string YAML indentada).
     scrapeConfigs: |
       - job_name: kubernetes-pods
         kubernetes_sd_configs:
@@ -28,6 +33,7 @@ config:
             target_label: app
           - source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
             target_label: __path__
+            # Junta UID e container com '/' para formar o caminho real em /var/log/pods/<uid>/<container>/*.log
             separator: /
             replacement: /var/log/pods/*$1/*.log
         pipeline_stages:

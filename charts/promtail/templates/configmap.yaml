@@ -5,10 +5,13 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   promtail.yaml: |
+    # Config do Promtail gerada via Helm.
+    # Este arquivo é montado no Pod em /etc/promtail/promtail.yaml.
     server:
       http_listen_port: 9080
       grpc_listen_port: 0
     {{- if .Values.config.positions }}
+    # positions: onde o Promtail salva o "offset" do que já foi lido.
     positions:
 {{ toYaml .Values.config.positions | nindent 6 }}
     {{- else }}
@@ -16,6 +19,7 @@ data:
       filename: /tmp/positions.yaml
     {{- end }}
     {{- if .Values.config.clients }}
+    # clients: para onde o Promtail envia logs (Loki /push).
     clients:
 {{ toYaml .Values.config.clients | nindent 6 }}
     {{- else if .Values.config.lokiAddress }}
@@ -25,6 +29,7 @@ data:
     clients: []
     {{- end }}
     {{- if and .Values.config.snippets .Values.config.snippets.scrapeConfigs }}
+    # scrape_configs: jobs de coleta (Kubernetes SD, paths, relabel, pipeline stages etc.).
     scrape_configs:
 {{ .Values.config.snippets.scrapeConfigs | nindent 6 }}
     {{- else }}
