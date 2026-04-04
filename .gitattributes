@@ -1,0 +1,5 @@
+# Ensure shell scripts work on Linux runners
+*.sh text eol=lf
+
+# Default behavior for text files
+* text=auto

@@ -1,86 +1,97 @@
-# Observabilidade em Microserviços Python com Kubernetes, Helm, Grafana, Tempo e Loki
+# Observabilidade em Microserviços Python no Kubernetes (Kind) com OpenTelemetry, Grafana, Tempo e Loki
 
-## Visão Geral
-Este projeto demonstra uma arquitetura de microserviços Python (catalog, cart, order) instrumentados com OpenTelemetry, rodando em Kubernetes e monitorados por uma stack de observabilidade moderna: Grafana, Tempo e Loki.
+Projeto de Observabilidade em Python(SRE/Observability) para demonstrar:
+- Tracing distribuído (OpenTelemetry) com propagação entre serviços
+- Logs no Loki com `trace_id` real (32-hex) para correlação com traces no Tempo
+- Grafana como “single pane of glass” (logs ↔ traces)
+- Deploy via Helm e opção GitOps via ArgoCD
 
 ## Componentes
-- **Serviços:**
-  - `catalog`: gerenciamento de produtos
-  - `cart`: gerenciamento de carrinhos
-  - `order`: gerenciamento de pedidos e orquestração
-- **Observabilidade:**
-  - **OpenTelemetry**: tracing distribuído em todos os serviços
-  - **Tempo**: backend de traces
-  - **Loki**: backend de logs
-  - **Grafana**: dashboards, traces e logs correlacionados
-- **Infraestrutura:**
-  - Deploy via Helm charts customizados
-  - Imagens Docker publicadas no Docker Hub
-  - Orquestração em Kubernetes (Kind)
+- **Serviços**
+	- `catalog`: produtos
+	- `cart`: carrinho
+	- `order`: pedidos/orquestração
+- **Observabilidade**
+	- **Tempo** (traces), **Loki** (logs), **Promtail** (scrape/ship), **Grafana** (dashboards)
+- **Kubernetes**
+	- Cluster local com **Kind** (foco em reproduzibilidade)
+	- Charts Helm em `./charts`
 
 ## Dashboards
-- Correlação entre traces e logs (trace_id)
+- **Observabilidade – Logs e Traces por Serviço**: visão geral com filtros `namespace`, `app`, `trace_id`
+- **Incidente – Erros, Logs e Traces**: foco em incident response (erros 5xx + drill down)
 
-## Como rodar
-1. **Build e push das imagens:**
-   ```sh
-   docker build -t yourname/catalog:latest ./services/catalog
-   docker build -t yourname/cart:latest ./services/cart
-   docker build -t yourname/order:latest ./services/order
-   docker push yourname/catalog:latest
-   docker push yourname/cart:latest
-   docker push yourname/order:latest
-   ```
-2. **Crie o cluster Kubernetes e namespaces:**
-   ```sh
-   kubectl create namespace virtual-store
-   kubectl create namespace observability
-   ```
-3. **Instale os charts via Helm e aplique os dashboards:**
-   ```sh
-   helm upgrade --install tempo ./charts/tempo --namespace observability
-   helm upgrade --install loki ./charts/loki --namespace observability
-   helm upgrade --install grafana ./charts/grafana --namespace observability
-   helm upgrade --install catalog ./charts/catalog --namespace virtual-store
-   helm upgrade --install cart ./charts/cart --namespace virtual-store
-   helm upgrade --install order ./charts/order --namespace virtual-store
-   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-   helm repo update
-   helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -n observability -f ./kube-prometheus-stack/values.yaml
+## Quickstart (recomendado): setup automatizado
+Este script automatiza a implantação em **Kind** usando **Docker + Helm + kubectl** (namespaces, observability stack e serviços).
 
-   # Aplique os ConfigMaps dos dashboards customizados
-   kubectl apply -f ./kube-prometheus-stack/incident-erros-logs-traces-dashboard-cm.yaml -n observability
-   kubectl apply -f ./kube-prometheus-stack/prometheus-cluster-dashboard-cm.yaml -n observability
-   kubectl apply -f ./kube-prometheus-stack/prometheus-metrics-dashboard-cm.yaml -n observability
-   kubectl apply -f ./kube-prometheus-stack/trace-log-correlation-dashboard-cm.yaml -n observability
-   ```
-4. **Acesse o Grafana:**
-   - Usuário padrão: `admin`
-   - Senha: Verifique no secret do grafana a senha 
-   - URL: http://localhost:3000
+### Pré-requisitos
+- `docker`, `kind`, `kubectl`, `helm`
+- **Windows**: Git Bash ou WSL para rodar o `.sh` (o script pergunta o ambiente)
 
-## GitOps com ArgoCD (fase 1)
-Esta opcao deixa o deploy com cara de producao, usando GitOps para sincronizar os charts.
+### Executar
+```bash
+bash ./scripts/bootstrap-kind.sh
+```
 
-1. **Instale o ArgoCD via Helm:**
-   ```sh
-   helm repo add argo https://argoproj.github.io/argo-helm
-   helm repo update
-   kubectl create namespace argocd
-   helm upgrade --install argocd argo/argo-cd -n argocd -f ./argocd/values.yaml
-   ```
-2. **Aplique os Applications:**
-   ```sh
-   kubectl apply -n argocd -f ./argocd/applications
-   ```
-3. **Acesso ao ArgoCD:**
-   - Ingress padrao: http://argocd.local (requer ingress controller)
-   - Alternativa via port-forward:
-     ```sh
-     kubectl port-forward svc/argocd-server -n argocd 8080:80
-     ```
+O script:
+1) cria/usa o cluster Kind
+2) cria namespaces `virtual-store` e `observability`
+3) builda imagens a partir de `./services` (inclui `services/common`)
+4) carrega imagens no Kind (sem precisar de registry)
+5) instala Tempo/Loki/Promtail e kube-prometheus-stack
+6) aplica dashboards
+7) instala `catalog`, `cart`, `order`
+
+## Acessar Grafana
+No Windows (PowerShell):
+```powershell
+./scripts/port-forward-grafana.ps1
+```
+
+No Linux/macOS (bash):
+```bash
+./scripts/port-forward-grafana.sh
+```
+
+URL: http://localhost:3000
+
+Senha (admin):
+```sh
+kubectl get secret -n observability kube-prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 -d
+```
+
+## Gerar tráfego (para ver logs/traces)
+Port-forward do `order`:
+```powershell
+./scripts/port-forward-order.ps1
+```
+
+No Linux/macOS (bash):
+```bash
+./scripts/port-forward-order.sh
+```
+
+Depois gere tráfego:
+```powershell
+./scripts/generate-traffic.ps1 -BaseUrl http://localhost:5002 -Requests 80 -DelayMs 50
+```
+
+No Linux/macOS (bash):
+```bash
+./scripts/generate-traffic.sh http://localhost:5002 80 50
+```
+
+## CI/CD (GitOps)
+- **CI**: valida charts (lint + template) em pull requests.
+- **CD GitOps**: build/push de imagens no GHCR e commit automático atualizando `charts/*/values.yaml` com o `image.tag` (SHA). O **ArgoCD** sincroniza o cluster a partir do Git.
+
+## GitOps com ArgoCD
+Os manifests de ArgoCD estão em `./argocd` (app-of-apps + Applications por componente).
+
+## Docs SRE
+- `docs-sre/HANDBOOK.md`
+- `docs-sre/PLAYBOOK.md`
+- `docs-sre/RUNBOOK.md`
 
 ## Troubleshooting
-- Veja o arquivo `PROBLEMAS_ENCONTRADOS.md` para um histórico dos principais desafios e soluções.
-- Use os dashboards provisionados para investigação rápida de incidentes.
-
+- Veja `PROBLEMAS_ENCONTRADOS.md` para histórico de problemas e correções.

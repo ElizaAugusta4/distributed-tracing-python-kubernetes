@@ -25,9 +25,10 @@ def setup_logger(service_name: str):
     logger = logging.getLogger(service_name)
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
-    formatter = TraceIdFormatter('%(asctime)s %(levelname)s %(name)s %(message)s trace_id=%(trace_id)s')
+    formatter = TraceIdFormatter('%(asctime)s %(levelname)s service=%(name)s %(message)s trace_id=%(trace_id)s')
     handler.setFormatter(formatter)
     logger.handlers = [handler]
+    logger.propagate = False
     return logger
 
 def setup_otel(app, service_name: str):
@@ -41,7 +42,7 @@ def setup_otel(app, service_name: str):
     otlp_exporter = OTLPSpanExporter(
         endpoint=os.getenv(
             "OTEL_EXPORTER_OTLP_ENDPOINT",
-            "http://tempo:4318"
+            "http://tempo:4318/v1/traces"
         )
     )
 
@@ -51,4 +52,4 @@ def setup_otel(app, service_name: str):
     FlaskInstrumentor().instrument_app(app)
     RequestsInstrumentor().instrument()
 
-    setup_logger(service_name)
+    return setup_logger(service_name)

@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-import logging
 import requests
 
 from common.otel import setup_otel
@@ -7,13 +6,7 @@ from common.otel import setup_otel
 app = Flask(__name__)
 orders = []
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)s %(name)s %(message)s'
-)
-logger = logging.getLogger("order-service")
-
-setup_otel(app, "order-service")
+logger = setup_otel(app, "order-service")
 
 CATALOG_URL = "http://catalog:5000/products"
 CART_URL = "http://cart:5001/cart"
@@ -21,7 +14,7 @@ CART_URL = "http://cart:5001/cart"
 
 @app.route('/orders', methods=['GET'])
 def list_orders():
-    logger.info(f"service=order-service status_code=200 trace_id={request.headers.get('traceparent', '')} Listando pedidos")
+    logger.info("status_code=200 Listando pedidos")
     return jsonify(orders)
 
 
@@ -50,13 +43,13 @@ def create_order():
     }
 
     orders.append(order)
-    logger.info(f"service=order-service status_code=201 trace_id={request.headers.get('traceparent', '')} Pedido criado: {order}")
+    logger.info(f"status_code=201 Pedido criado: {order}")
     return jsonify(order), 201
 
 
 @app.errorhandler(Exception)
 def handle_exception(e):
-    logger.error(f"service=order-service status_code=500 trace_id={request.headers.get('traceparent', '')} Erro capturado: {e}")
+    logger.error(f"status_code=500 Erro capturado: {e}")
     return jsonify({"error": str(e)}), 500
 
 

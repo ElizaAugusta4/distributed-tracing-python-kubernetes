@@ -1,5 +1,5 @@
 image:
-  repository: elizaaugusta/catalog
+  repository: ghcr.io/elizaaugusta4/distributed-tracing-python-kubernetes/catalog
   tag: latest
   pullPolicy: IfNotPresent
 replicaCount: 2

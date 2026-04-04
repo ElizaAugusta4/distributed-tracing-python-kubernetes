@@ -1,28 +1,24 @@
-from flask import Flask, request, jsonify
-import logging
+from flask import Flask, jsonify
 
 from common.otel import setup_otel
 
 app = Flask(__name__)
 products = []
 
-setup_otel(app, "catalog-service")
-logger = logging.getLogger("catalog-service")
+logger = setup_otel(app, "catalog-service")
 
 
 @app.route('/products', methods=['GET'])
 def list_products():
-    from flask import request
-    logger.info(f"service=catalog-service status_code=200 trace_id={request.headers.get('traceparent', '')} Listando produtos")
+    logger.info("status_code=200 Listando produtos")
     return jsonify(products)
 
 
 @app.route('/products', methods=['POST'])
 def add_product():
-    from flask import request
     data = request.json
     products.append(data)
-    logger.info(f"service=catalog-service status_code=201 trace_id={request.headers.get('traceparent', '')} Produto adicionado: {data}")
+    logger.info(f"status_code=201 Produto adicionado: {data}")
     return jsonify(data), 201
 
 
