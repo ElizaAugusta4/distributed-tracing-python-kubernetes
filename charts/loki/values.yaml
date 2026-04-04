@@ -6,7 +6,7 @@ service:
   port: 3100
 
 loki:
-  auth_enabled: false   # ← sem isso o Loki rejeita requests sem tenant header
+  auth_enabled: false
 
   commonConfig:
     replication_factor: 1
@@ -16,7 +16,7 @@ loki:
 
   schemaConfig:
     configs:
-      - from: "2024-01-01"
+      - from: "2024-01-01"      # ← data recente, não 2020
         store: boltdb-shipper
         object_store: filesystem
         schema: v11

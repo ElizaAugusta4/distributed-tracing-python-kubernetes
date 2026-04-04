@@ -3,8 +3,6 @@ image:
   tag: 2.9.0
 
 config:
-  lokiAddress: http://loki:3100/loki/api/v1/push
-
   clients:
     - url: http://loki:3100/loki/api/v1/push
 
@@ -15,37 +13,21 @@ config:
     pipelineStages:
       - docker: {}
 
-    # ← AQUI é onde o chart lê de verdade
     scrapeConfigs: |
       - job_name: kubernetes-pods
         kubernetes_sd_configs:
           - role: pod
         relabel_configs:
-          # Manter apenas pods com annotation de logging (opcional mas recomendado)
-          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
-            action: drop
-            regex: "false"
-
-          # Label: namespace
           - source_labels: [__meta_kubernetes_namespace]
             target_label: namespace
-
-          # Label: nome do pod
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
-
-          # Label: nome do container
           - source_labels: [__meta_kubernetes_pod_container_name]
             target_label: container
-
-          # Label: app (pega do label "app" do pod)
           - source_labels: [__meta_kubernetes_pod_label_app]
             target_label: app
-
-          # Caminho do log no nó
           - source_labels: [__meta_kubernetes_pod_uid, __meta_kubernetes_pod_container_name]
             target_label: __path__
             replacement: /var/log/pods/*$1*/$2/*.log
-
         pipeline_stages:
           - docker: {}
