@@ -15,13 +15,13 @@ spec:
         app: promtail
     spec:
       serviceAccountName: promtail
-      tolerations:                       
+      {% comment %} tolerations:                       
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
         - key: node-role.kubernetes.io/master
           operator: Exists
-          effect: NoSchedule
+          effect: NoSchedule {% endcomment %}
       containers:
         - name: promtail
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
