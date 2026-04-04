@@ -1,5 +1,25 @@
 image:
   repository: grafana/loki
   tag: 2.9.3
+
 service:
   port: 3100
+
+loki:
+  auth_enabled: false   # ← sem isso o Loki rejeita requests sem tenant header
+
+  commonConfig:
+    replication_factor: 1
+
+  storage:
+    type: filesystem
+
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: boltdb-shipper
+        object_store: filesystem
+        schema: v11
+        index:
+          prefix: index_
+          period: 24h
