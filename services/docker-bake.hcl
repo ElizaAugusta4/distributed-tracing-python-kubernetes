@@ -11,7 +11,7 @@ group "default" {
 }
 
 target "_common" {
-  context = "."
+  context = "./services"
   platforms = ["linux/amd64"]
 }
 
