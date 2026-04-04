@@ -13,6 +13,8 @@ spec:
     metadata:
       labels:
         app: promtail
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       serviceAccountName: promtail
       tolerations:                        # ← garante rodar em todos os nós
