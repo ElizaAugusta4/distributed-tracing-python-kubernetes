@@ -13,11 +13,9 @@ spec:
     metadata:
       labels:
         app: promtail
-      annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       serviceAccountName: promtail
-      tolerations:                        # ← garante rodar em todos os nós
+      tolerations:                       
         - key: node-role.kubernetes.io/control-plane
           operator: Exists
           effect: NoSchedule
@@ -31,10 +29,6 @@ spec:
             - -config.file=/etc/promtail/promtail.yaml
           env:
             - name: HOSTNAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
-            - name: NODE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
@@ -52,7 +46,7 @@ spec:
           configMap:
             name: promtail-config
         - name: positions
-          hostPath:                       # ← no DaemonSet positions fica no nó
+          hostPath:                       
             path: /tmp/promtail-positions
         - name: varlogpods
           hostPath:
