@@ -107,34 +107,6 @@ O CD faz 3 coisas em sequência:
 - O CD não roda quando muda `charts/**`.
 - Então o commit automático de “bump” não re-dispara o CD.
 
-### Como isso afeta seu cluster local (Kind) na prática
-Se você já tem o ArgoCD sincronizando este repositório (como você comentou), então **todo push no GitHub pode virar mudança no cluster**, dependendo do que foi alterado.
-
-#### Cenário A — você mudou uma app (ex: `services/cart/app.py`)
-- Você dá push na `main`
-- CD roda, publica imagens no GHCR e comita o bump de tag nos charts
-- ArgoCD sincroniza e o cluster atualiza os Deployments para usar a nova `image.tag` (SHA)
-
-#### Cenário B — você mudou um chart (ex: `charts/cart/values.yaml`)
-- Você dá push na `main`
-- **CD não roda** (por design)
-- **ArgoCD pode aplicar mesmo assim** (porque ele segue o Git)
-	- Se a mudança foi “só config” (replicas/env/recursos), normalmente atualiza ok
-	- Se a mudança apontou para uma imagem/tag que não existe (ou GHCR privado sem credencial), pode dar `ImagePullBackOff`
-
-#### Cenário C — você mudou só docs (ex: `README.md`)
-- CD não roda
-- ArgoCD normalmente não muda nada relevante (sem manifests alterados)
-
-### Fluxos comuns (escolha o que você quer demonstrar)
-1) **Dev local rápido (sem registry)**
-	 - Use `scripts/bootstrap-kind.sh` + `kind load` (imagens locais)
-	 - Bom para iterar rápido no Kind
-2) **Demo GitOps “portfolio” (com GHCR)**
-	 - Deixe o CD publicar no GHCR e o ArgoCD puxar do registry
-	 - Bom para mostrar pipeline e fluxo GitOps end-to-end
-
-> Dica: se for usar GHCR privado, você vai precisar de `imagePullSecret` no cluster para o Kubernetes conseguir puxar as imagens.
 
 ## GitOps com ArgoCD
 Os manifests de ArgoCD estão em `./argocd` (app-of-apps + Applications por componente).
