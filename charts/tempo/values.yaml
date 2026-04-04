@@ -1,6 +1,6 @@
 image:
   repository: grafana/tempo
-  tag: 2.4.1
+  tag: 2.7.0
 
 config:
   storage:

@@ -2,4 +2,4 @@ apiVersion: v2
 name: tempo
 version: 0.1.0
 description: Helm chart para Tempo
-appVersion: "2.3.1"
+appVersion: "2.7.0"
