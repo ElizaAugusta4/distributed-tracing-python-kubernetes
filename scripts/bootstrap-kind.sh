@@ -43,13 +43,14 @@ say "- Requisitos: docker, kind, kubectl, helm."
 say "\nQual ambiente você está usando?"
 say "  1) Windows (PowerShell / Git Bash / WSL)"
 say "  2) Linux (bash)"
-read -r -p "Escolha [1/2]: " ENV_CHOICE
-
-case "${ENV_CHOICE}" in
-  1) ENV_NAME="windows" ;;
-  2) ENV_NAME="linux" ;;
-  *) err "Escolha inválida. Use 1 (Windows) ou 2 (Linux)."; exit 2 ;;
-esac
+while true; do
+  read -r -p "Escolha [1/2]: " ENV_CHOICE || true
+  case "${ENV_CHOICE}" in
+    1) ENV_NAME="windows"; break ;;
+    2) ENV_NAME="linux"; break ;;
+    *) err "Escolha inválida. Use 1 (Windows) ou 2 (Linux)." ;;
+  esac
+done
 
 # Config padrão (ajuste via env vars)
 KIND_CLUSTER_NAME="${KIND_CLUSTER_NAME:-virtual-store}"
@@ -87,6 +88,10 @@ say "OK."
 say "\n[1/7] Criando/validando cluster kind..."
 if kind get clusters | grep -qx "${KIND_CLUSTER_NAME}"; then
   say "- kind cluster '${KIND_CLUSTER_NAME}' já existe."
+  if confirm "Quer RECRIAR o cluster '${KIND_CLUSTER_NAME}' do zero? (APAGA TUDO no cluster)"; then
+    kind delete cluster --name "${KIND_CLUSTER_NAME}"
+    kind create cluster --name "${KIND_CLUSTER_NAME}"
+  fi
 else
   kind create cluster --name "${KIND_CLUSTER_NAME}"
 fi
