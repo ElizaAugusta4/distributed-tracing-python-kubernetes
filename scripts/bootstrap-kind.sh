@@ -36,6 +36,34 @@ detect_default_tag() {
   fi
 }
 
+cleanup_orphan_configmap() {
+  local ns="$1"
+  local cm_name="$2"
+  local release_name="$3"
+
+  if ! kubectl -n "$ns" get configmap "$cm_name" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  local owned_by
+  owned_by="$(kubectl -n "$ns" get configmap "$cm_name" -o jsonpath='{.metadata.annotations.meta\.helm\.sh/release-name}' 2>/dev/null || true)"
+
+  if [[ "$owned_by" == "$release_name" ]]; then
+    return 0
+  fi
+
+  say "\n[AVISO] Encontrado ConfigMap existente '$cm_name' em ns '$ns' que não pertence ao release Helm '$release_name'."
+  say "Isso geralmente acontece quando sobram recursos de uma instalação anterior e o Helm se recusa a 'adotar'."
+
+  if confirm "Quer remover o ConfigMap órfão '$cm_name' para continuar?"; then
+    kubectl -n "$ns" delete configmap "$cm_name"
+  else
+    err "\n[ERRO] Não dá pra instalar/atualizar '$release_name' enquanto '$cm_name' conflitar."
+    err "Opções: (1) recriar o cluster do zero, ou (2) deletar o ConfigMap manualmente."
+    exit 3
+  fi
+}
+
 say "\nBootstrap do projeto (Kind + Docker + Helm + Observability)"
 say "- Objetivo: automatizar a implantação do repo em um cluster Kind, criando namespaces, instalando Loki/Tempo/Promtail/Grafana e subindo os serviços."
 say "- Requisitos: docker, kind, kubectl, helm." 
@@ -114,8 +142,11 @@ kind load docker-image "${IMG_CART}" --name "${KIND_CLUSTER_NAME}"
 kind load docker-image "${IMG_ORDER}" --name "${KIND_CLUSTER_NAME}"
 
 say "\n[5/7] Instalando stack de observabilidade (Tempo/Loki/Promtail/Grafana)..."
+cleanup_orphan_configmap "${NS_OBS}" "tempo-config" "tempo"
 helm upgrade --install tempo ./charts/tempo --namespace "${NS_OBS}"
 helm upgrade --install loki ./charts/loki --namespace "${NS_OBS}"
+
+cleanup_orphan_configmap "${NS_OBS}" "promtail-config" "promtail"
 helm upgrade --install promtail ./charts/promtail --namespace "${NS_OBS}"
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts >/dev/null 2>&1 || true
