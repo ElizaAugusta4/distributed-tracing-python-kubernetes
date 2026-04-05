@@ -52,6 +52,7 @@ Este arquivo documenta o mapeamento e o progresso do projeto, que visa criar uma
 -  GitOps com ArgoCD para deploy automatico
 -  Hardenizacao dos servicos (probes, resources, securityContext)
 -  Autoscaling e PDB por servico
+-  Adicionar as pipelines CI e CD no repositório 
 ---
 ## 4. Critério de Saúde e Painel de Confiabilidade das APIs
 
