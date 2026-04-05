@@ -21,64 +21,84 @@ Projeto de Observabilidade em Python(SRE/Observability) para demonstrar:
 - **Observabilidade – Logs e Traces por Serviço**: visão geral com filtros `namespace`, `app`, `trace_id`
 - **Incidente – Erros, Logs e Traces**: foco em incident response (erros 5xx + drill down)
 
-## Quickstart (recomendado): setup automatizado
-Este script automatiza a implantação em **Kind** usando **Docker + Helm + kubectl** (namespaces, observability stack e serviços).
+## Setup manual (Kind + Helm)
 
 ### Pré-requisitos
 - `docker`, `kind`, `kubectl`, `helm`
-- **Windows**: Git Bash ou WSL para rodar o `.sh` (o script pergunta o ambiente)
 
-### Executar
+### Criar cluster e namespaces
 ```bash
-bash ./scripts/bootstrap-kind.sh
+kind create cluster --name virtual-store
+kubectl create namespace virtual-store
+kubectl create namespace observability
 ```
 
-O script:
-1) cria/usa o cluster Kind
-2) cria namespaces `virtual-store` e `observability`
-3) builda imagens a partir de `./services` (inclui `services/common`)
-4) carrega imagens no Kind (sem precisar de registry)
-5) instala Tempo/Loki/Promtail e kube-prometheus-stack
-6) aplica dashboards
-7) instala `catalog`, `cart`, `order`
+### Instalar observabilidade (Tempo/Loki/Promtail/Grafana)
+```bash
+helm upgrade --install tempo ./charts/tempo --namespace observability
+helm upgrade --install loki ./charts/loki --namespace observability
+helm upgrade --install promtail ./charts/promtail --namespace observability
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+	-n observability \
+	-f ./charts/kube-prometheus-stack/values.yaml
+
+kubectl apply -n observability -f ./charts/kube-prometheus-stack/dashboards
+```
+
+### Build e deploy dos serviços
+1) Build local das imagens (a partir de `./services`):
+```bash
+docker build -t catalog:local -f ./services/catalog/Dockerfile ./services
+docker build -t cart:local -f ./services/cart/Dockerfile ./services
+docker build -t order:local -f ./services/order/Dockerfile ./services
+```
+
+2) Carregar imagens no Kind:
+```bash
+kind load docker-image catalog:local --name virtual-store
+kind load docker-image cart:local --name virtual-store
+kind load docker-image order:local --name virtual-store
+```
+
+3) Instalar os charts (ajuste a tag/repo conforme necessário):
+```bash
+helm upgrade --install catalog ./charts/catalog -n virtual-store \
+	--set image.repository=catalog --set image.tag=local
+helm upgrade --install cart ./charts/cart -n virtual-store \
+	--set image.repository=cart --set image.tag=local
+helm upgrade --install order ./charts/order -n virtual-store \
+	--set image.repository=order --set image.tag=local
+```
 
 ## Acessar Grafana
-No Windows (PowerShell):
-```powershell
-./scripts/port-forward-grafana.ps1
-```
-
-No Linux/macOS (bash):
 ```bash
-./scripts/port-forward-grafana.sh
+kubectl -n observability port-forward svc/kube-prometheus-stack-grafana 3000:80
 ```
 
 URL: http://localhost:3000
 
 Senha (admin):
-```sh
+```bash
 kubectl get secret -n observability kube-prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 -d
 ```
 
 ## Gerar tráfego (para ver logs/traces)
-Port-forward do `order`:
-```powershell
-./scripts/port-forward-order.ps1
-```
-
-No Linux/macOS (bash):
+1) Port-forward do `order`:
 ```bash
-./scripts/port-forward-order.sh
+kubectl -n virtual-store port-forward svc/order 5002:5002
 ```
 
-Depois gere tráfego:
-```powershell
-./scripts/generate-traffic.ps1 -BaseUrl http://localhost:5002 -Requests 80 -DelayMs 50
-```
-
-No Linux/macOS (bash):
+2) Em outro terminal, gere requisições:
 ```bash
-./scripts/generate-traffic.sh http://localhost:5002 80 50
+for i in $(seq 1 80); do
+	curl -s -X POST http://localhost:5002/order \
+		-H 'content-type: application/json' \
+		-d '{"product_id":"p1","quantity":1}' >/dev/null
+	sleep 0.05
+done
 ```
 
 ## CI/CD (GitOps)
