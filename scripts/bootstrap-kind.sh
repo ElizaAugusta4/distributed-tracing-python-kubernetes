@@ -19,6 +19,23 @@ confirm() {
   [[ "${ans,,}" == "y" || "${ans,,}" == "yes" ]]
 }
 
+detect_default_tag() {
+  # Prefer the tag currently set in charts (useful when repo is in GitOps mode).
+  # Fallback to "latest".
+  local values_file="$1"
+  local tag
+  tag="$(awk '
+    $1=="image:" {inimg=1; next}
+    inimg && $1=="tag:" {print $2; exit}
+  ' "$values_file" 2>/dev/null || true)"
+
+  if [[ -n "${tag}" ]]; then
+    printf "%s" "${tag}"
+  else
+    printf "%s" "latest"
+  fi
+}
+
 say "\nBootstrap do projeto (Kind + Docker + Helm + Observability)"
 say "- Objetivo: automatizar a implantação do repo em um cluster Kind, criando namespaces, instalando Loki/Tempo/Promtail/Grafana e subindo os serviços."
 say "- Requisitos: docker, kind, kubectl, helm." 
@@ -42,7 +59,10 @@ NS_OBS="${NS_OBS:-observability}"
 # Registry padrão (alinhado com Helm values e CD GitOps)
 IMAGE_OWNER="${IMAGE_OWNER:-elizaaugusta4}"
 IMAGE_PREFIX="${IMAGE_PREFIX:-ghcr.io/${IMAGE_OWNER}/distributed-tracing-python-kubernetes}"
-TAG="${TAG:-latest}"
+TAG="${TAG:-}"
+if [[ -z "${TAG}" ]]; then
+  TAG="$(detect_default_tag ./charts/catalog/values.yaml)"
+fi
 
 IMG_CATALOG="${IMAGE_PREFIX}/catalog:${TAG}"
 IMG_CART="${IMAGE_PREFIX}/cart:${TAG}"
@@ -102,9 +122,17 @@ helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheu
 kubectl apply -n "${NS_OBS}" -f ./charts/kube-prometheus-stack/dashboards
 
 say "\n[6/7] Instalando serviços (Helm)..."
-helm upgrade --install catalog ./charts/catalog --namespace "${NS_STORE}"
-helm upgrade --install cart ./charts/cart --namespace "${NS_STORE}"
-helm upgrade --install order ./charts/order --namespace "${NS_STORE}"
+helm upgrade --install catalog ./charts/catalog --namespace "${NS_STORE}" \
+  --set image.repository="${IMAGE_PREFIX}/catalog" \
+  --set image.tag="${TAG}"
+
+helm upgrade --install cart ./charts/cart --namespace "${NS_STORE}" \
+  --set image.repository="${IMAGE_PREFIX}/cart" \
+  --set image.tag="${TAG}"
+
+helm upgrade --install order ./charts/order --namespace "${NS_STORE}" \
+  --set image.repository="${IMAGE_PREFIX}/order" \
+  --set image.tag="${TAG}"
 
 say "\n[7/7] Pós-setup (opcional)"
 if confirm "Quer iniciar port-forward do Grafana em http://localhost:3000 agora?"; then
