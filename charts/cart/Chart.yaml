@@ -2,4 +2,4 @@ apiVersion: v2
 name: cart
 version: 0.1.0
 description: Helm chart para o serviço Cart
-appVersion: "cc0a8c5d05407a0b38b418c705c5dc8fabe77fca"
+appVersion: "69cf006ab20cc77f971d0182839196f09ef1b26f"
