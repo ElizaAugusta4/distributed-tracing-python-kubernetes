@@ -1,4 +1,5 @@
 flask
+gunicorn
 psycopg[binary]
 prometheus-client
 opentelemetry-api

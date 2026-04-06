@@ -1,4 +1,5 @@
 flask
+gunicorn
 prometheus-client
 opentelemetry-api
 opentelemetry-sdk
