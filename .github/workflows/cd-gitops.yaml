@@ -79,5 +79,5 @@ jobs:
           git add charts/catalog/values.yaml charts/cart/values.yaml charts/order/values.yaml \
                   charts/catalog/Chart.yaml charts/cart/Chart.yaml charts/order/Chart.yaml
 
-          git commit -m "chore(gitops): deploy $GITHUB_SHA"
+          git commit -m "(gitops): deploy $GITHUB_SHA"
           git push
