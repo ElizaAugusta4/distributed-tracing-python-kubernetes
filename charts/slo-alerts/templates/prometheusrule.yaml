@@ -168,6 +168,18 @@ spec:
             summary: "Pod em Pending"
             description: "Pod está Pending por mais de 10m no namespace {{ .Values.operational.namespace }}."
 
+        - alert: KubePodNotReady
+          expr: |
+            max by (namespace, pod) (
+              kube_pod_status_ready{namespace={{ .Values.operational.namespace | quote }}, condition="true"} == bool 0
+            ) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod NotReady"
+            description: "Pod não está Ready por mais de 5m no namespace {{ .Values.operational.namespace }}."
+
         - alert: KubeHpaMaxedOut
           expr: |
             kube_hpa_status_desired_replicas{namespace={{ .Values.operational.namespace | quote }}}
