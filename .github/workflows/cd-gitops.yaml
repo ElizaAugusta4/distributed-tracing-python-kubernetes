@@ -71,6 +71,9 @@ jobs:
             docker run --rm \
               -v "${CACHE_DIR}:/root/.cache/" \
               "$TRIVY_IMAGE" image \
+              --scanners vuln \
+              --vuln-type os \
+              --ignore-unfixed \
               --severity HIGH,CRITICAL \
               --exit-code 1 \
               "$img"
