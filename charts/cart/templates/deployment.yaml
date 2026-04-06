@@ -44,6 +44,18 @@ spec:
           env:
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "http://tempo.observability:4318/v1/traces"
+            - name: HTTP_CONNECT_TIMEOUT
+              value: {{ .Values.httpClient.connectTimeout | quote }}
+            - name: HTTP_READ_TIMEOUT
+              value: {{ .Values.httpClient.readTimeout | quote }}
+            - name: HTTP_RETRY_TOTAL
+              value: {{ .Values.httpClient.retryTotal | quote }}
+            - name: HTTP_RETRY_BACKOFF
+              value: {{ .Values.httpClient.retryBackoff | quote }}
+            {{- if .Values.dependencyCheckUrls }}
+            - name: DEPENDENCY_CHECK_URLS
+              value: {{ .Values.dependencyCheckUrls | quote }}
+            {{- end }}
             - name: PYTHONDONTWRITEBYTECODE
               value: "1"
             - name: PYTHONUNBUFFERED

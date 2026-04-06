@@ -71,3 +71,15 @@ monitoring:
   path: /metrics
   interval: 15s
   scrapeTimeout: 10s
+
+# Optional: enables dependency-aware readiness checks in /readyz.
+# Format: comma-separated URLs to check via GET.
+# Example: "http://catalog:5000/healthz,http://order:5002/healthz"
+dependencyCheckUrls: ""
+
+# Shared outbound HTTP client defaults (services/common/http_client.py)
+httpClient:
+  connectTimeout: "0.5"
+  readTimeout: "2.0"
+  retryTotal: "2"
+  retryBackoff: "0.2"
