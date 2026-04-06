@@ -2,4 +2,4 @@ apiVersion: v2
 name: order
 version: 0.1.0
 description: Helm chart para o serviço Order
-appVersion: "438bbceee165623b3616c70fc617e4faa867da84"
+appVersion: "f03f0aa0eb724aa2f5e03f12532af2414896b27b"
