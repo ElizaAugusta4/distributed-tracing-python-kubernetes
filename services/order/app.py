@@ -40,6 +40,64 @@ CART_URL = "http://cart:5001/cart"
 DB = None
 DB_INITED = False
 
+_last_db_ready_check_ts = 0.0
+_last_db_ready_check_ok = True
+
+
+def _db_is_configured() -> bool:
+    host = os.getenv("DB_HOST")
+    port = os.getenv("DB_PORT", "5432")
+    user = os.getenv("DB_USER")
+    password = os.getenv("DB_PASSWORD")
+    name = os.getenv("DB_NAME")
+    return bool(host and port and user and password and name)
+
+
+def _check_db_ready() -> bool:
+    """Return True if Postgres is reachable.
+
+    Notes:
+    - This is for Kubernetes readiness only.
+    - Kept lightweight (no tracing spans, no schema init).
+    - Uses a short timeout and a small TTL cache to avoid connection storms.
+    """
+
+    global _last_db_ready_check_ok, _last_db_ready_check_ts
+
+    if not _db_is_configured():
+        return True
+
+    now = time.time()
+    if (now - _last_db_ready_check_ts) < 5:
+        return _last_db_ready_check_ok
+
+    host = os.getenv("DB_HOST")
+    port = os.getenv("DB_PORT", "5432")
+    user = os.getenv("DB_USER")
+    password = os.getenv("DB_PASSWORD")
+    name = os.getenv("DB_NAME")
+
+    ok = False
+    try:
+        with psycopg.connect(
+            host=host,
+            port=int(port),
+            user=user,
+            password=password,
+            dbname=name,
+            connect_timeout=1,
+        ) as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+                cur.fetchone()
+        ok = True
+    except Exception:
+        ok = False
+
+    _last_db_ready_check_ok = ok
+    _last_db_ready_check_ts = now
+    return ok
+
 
 def _get_db():
     global DB, DB_INITED
@@ -257,6 +315,8 @@ def healthz():
 def readyz():
     if _shutting_down:
         return jsonify({"status": "shutting_down"}), 503
+    if not _check_db_ready():
+        return jsonify({"status": "db_unavailable"}), 503
     return jsonify({"status": "ready"}), 200
 
 
