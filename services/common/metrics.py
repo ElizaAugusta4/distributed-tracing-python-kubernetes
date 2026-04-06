@@ -18,7 +18,14 @@ HTTP_REQUEST_DURATION_SECONDS = Histogram(
 )
 
 
-def setup_metrics(app, service_name: str, exclude_paths: Iterable[str] = ("/metrics", "/healthz")):
+def _normalized_path_label() -> str:
+    rule = getattr(getattr(request, "url_rule", None), "rule", None)
+    if isinstance(rule, str) and rule:
+        return rule
+    return "unknown"
+
+
+def setup_metrics(app, service_name: str, exclude_paths: Iterable[str] = ("/metrics", "/healthz", "/readyz")):
     excluded = set(exclude_paths)
 
     @app.before_request
@@ -33,19 +40,21 @@ def setup_metrics(app, service_name: str, exclude_paths: Iterable[str] = ("/metr
         if request.path in excluded:
             return response
 
+        path_label = _normalized_path_label()
+
         start = getattr(g, "_metrics_start_time", None)
         if start is not None:
             duration = max(0.0, time.monotonic() - start)
             HTTP_REQUEST_DURATION_SECONDS.labels(
                 service=service_name,
                 method=request.method,
-                path=request.path,
+                path=path_label,
             ).observe(duration)
 
         HTTP_REQUESTS_TOTAL.labels(
             service=service_name,
             method=request.method,
-            path=request.path,
+            path=path_label,
             status_code=str(response.status_code),
         ).inc()
         return response
