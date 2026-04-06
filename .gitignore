@@ -11,3 +11,6 @@ ENV/
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Local-only docs
+MICROPROJETO_PRODUCAO.md
