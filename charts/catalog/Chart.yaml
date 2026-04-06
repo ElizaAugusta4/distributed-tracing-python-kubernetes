@@ -2,4 +2,4 @@ apiVersion: v2
 name: catalog
 version: 0.1.0
 description: Helm chart para o serviço Catalog
-appVersion: "43df755d6f9ef352fb52cf27040ddd8ee63e50c9"
+appVersion: "87aab6924d74dd8943a9d41123f1ac5fc9f66d25"

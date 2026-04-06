@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/elizaaugusta4/distributed-tracing-python-kubernetes/cart
-  tag: 43df755d6f9ef352fb52cf27040ddd8ee63e50c9
+  tag: 87aab6924d74dd8943a9d41123f1ac5fc9f66d25
   pullPolicy: IfNotPresent
 replicaCount: 3
 terminationGracePeriodSeconds: 45
@@ -71,12 +71,10 @@ monitoring:
   path: /metrics
   interval: 15s
   scrapeTimeout: 10s
-
 # Optional: enables dependency-aware readiness checks in /readyz.
 # Format: comma-separated URLs to check via GET.
 # Example: "http://catalog:5000/healthz,http://order:5002/healthz"
 dependencyCheckUrls: ""
-
 # Shared outbound HTTP client defaults (services/common/http_client.py)
 httpClient:
   connectTimeout: "0.5"
