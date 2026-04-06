@@ -10,6 +10,20 @@ from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.trace import get_current_span
 from opentelemetry.trace.span import INVALID_SPAN_CONTEXT
 
+
+def get_trace_context_ids():
+    span = get_current_span()
+    if span is None or span.get_span_context() is None:
+        return ("-", "-")
+
+    ctx = span.get_span_context()
+    if ctx.trace_id == INVALID_SPAN_CONTEXT.trace_id:
+        return ("-", "-")
+
+    trace_id = format(ctx.trace_id, "032x")
+    span_id = format(ctx.span_id, "016x") if ctx.span_id else "-"
+    return (trace_id, span_id)
+
 class TraceIdFormatter(logging.Formatter):
     def format(self, record):
         span = get_current_span()

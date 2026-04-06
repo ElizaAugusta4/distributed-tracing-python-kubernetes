@@ -48,6 +48,13 @@ helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheu
 kubectl apply -n observability -f ./charts/kube-prometheus-stack/dashboards
 ```
 
+### Instalar banco (PostgreSQL)
+Este banco é usado para persistir pedidos e registrar dependências entre serviços (ex: `order-service -> cart-service/catalog-service`) junto com `trace_id` e latência.
+
+```bash
+helm upgrade --install postgres ./charts/postgres -n virtual-store
+```
+
 ### Build e deploy dos serviços
 1) Build local das imagens (a partir de `./services`):
 ```bash
@@ -94,11 +101,22 @@ kubectl -n virtual-store port-forward svc/order 5002:5002
 2) Em outro terminal, gere requisições:
 ```bash
 for i in $(seq 1 80); do
-	curl -s -X POST http://localhost:5002/order \
+	curl -s -X POST http://localhost:5002/orders \
 		-H 'content-type: application/json' \
-		-d '{"product_id":"p1","quantity":1}' >/dev/null
+		-d '{"user_id":"u1"}' >/dev/null
 	sleep 0.05
 done
+```
+
+Opcional (para enriquecer o cenário):
+```bash
+# adicionar produtos no catalog
+kubectl -n virtual-store port-forward svc/catalog 5000:5000
+curl -s -X POST http://localhost:5000/products -H 'content-type: application/json' -d '{"id":"p1","name":"Produto 1"}'
+
+# adicionar item no carrinho
+kubectl -n virtual-store port-forward svc/cart 5001:5001
+curl -s -X POST http://localhost:5001/cart/u1 -H 'content-type: application/json' -d '{"id":"p1","qty":1}'
 ```
 
 ## CI/CD (GitOps)
@@ -106,7 +124,7 @@ done
 ### CI (quality gate)
 - Workflow: `.github/workflows/ci.yaml`
 - Quando roda: em **push** e em **pull request**
-- O que faz: para cada chart da lista (`cart`, `catalog`, `order`, `loki`, `promtail`, `tempo`) executa:
+- O que faz: para cada chart da lista (`cart`, `catalog`, `order`, `loki`, `promtail`, `tempo`, `postgres`) executa:
 	- `helm lint` (pega erros de chart/values)
 	- `helm template` (garante que o chart renderiza)
 
@@ -138,3 +156,4 @@ Os manifests de ArgoCD estão em `./argocd` (app-of-apps + Applications por comp
 
 ## Troubleshooting
 - Veja `PROBLEMAS_ENCONTRADOS.md` para histórico de problemas e correções.
+

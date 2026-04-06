@@ -1,0 +1,27 @@
+image:
+  repository: postgres
+  tag: "16-alpine"
+  pullPolicy: IfNotPresent
+
+auth:
+  username: virtualstore
+  password: virtualstore
+  database: virtualstore
+
+service:
+  port: 5432
+
+persistence:
+  enabled: false
+  size: 1Gi
+
+resources: {}
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 70
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL

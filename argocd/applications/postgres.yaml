@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgres
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL:  https://github.com/ElizaAugusta4/distributed-tracing-python-kubernetes
+    targetRevision: HEAD
+    path: charts/postgres
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: virtual-store
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

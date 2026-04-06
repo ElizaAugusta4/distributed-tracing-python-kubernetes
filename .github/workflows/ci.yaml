@@ -19,7 +19,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          charts=(cart catalog order loki promtail tempo)
+          charts=(cart catalog order loki promtail tempo postgres)
 
           for c in "${charts[@]}"; do
             echo "::group::helm lint charts/$c"

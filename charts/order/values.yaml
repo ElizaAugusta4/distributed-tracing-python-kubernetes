@@ -2,6 +2,15 @@ image:
   repository: ghcr.io/elizaaugusta4/distributed-tracing-python-kubernetes/order
   tag: 7557880baecd51bb28caa823cdcce5f97ed77612
   pullPolicy: IfNotPresent
+
+database:
+  enabled: true
+  host: postgres
+  port: 5432
+  secretName: postgres-auth
+  userKey: username
+  passwordKey: password
+  databaseKey: database
 replicaCount: 2
 service:
   port: 5002
