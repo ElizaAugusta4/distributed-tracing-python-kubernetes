@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/elizaaugusta4/distributed-tracing-python-kubernetes/cart
-  tag: 69cf006ab20cc77f971d0182839196f09ef1b26f
+  tag: 438bbceee165623b3616c70fc617e4faa867da84
   pullPolicy: IfNotPresent
 replicaCount: 3
 service:
@@ -55,7 +55,6 @@ affinity:
             matchLabels:
               app: cart
           topologyKey: "kubernetes.io/hostname"
-
 monitoring:
   enabled: true
   releaseLabel: kube-prometheus-stack
