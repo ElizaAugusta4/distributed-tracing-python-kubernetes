@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/elizaaugusta4/distributed-tracing-python-kubernetes/cart
-  tag: 5f81b3d585f4e1404dc3fe91cdec01e44b289e31
+  tag: db9edc3c79e04e20e31cab58dbea5d5cc5612c5f
   pullPolicy: IfNotPresent
 replicaCount: 3
 terminationGracePeriodSeconds: 45
