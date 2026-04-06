@@ -30,7 +30,7 @@ spec:
       {{- else if .Values.serviceAccount.name }}
       serviceAccountName: {{ .Values.serviceAccount.name }}
       {{- end }}
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: {{ default 30 .Values.terminationGracePeriodSeconds }}
       {{- if .Values.podSecurityContext }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -80,6 +80,15 @@ spec:
               port: {{ .Values.service.port }}
             initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
             periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            {{- if .Values.probes.liveness.timeoutSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            {{- end }}
+            {{- if .Values.probes.liveness.failureThreshold }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+            {{- end }}
+            {{- if .Values.probes.liveness.successThreshold }}
+            successThreshold: {{ .Values.probes.liveness.successThreshold }}
+            {{- end }}
           {{- end }}
           {{- if .Values.probes.readiness }}
           readinessProbe:
@@ -88,6 +97,15 @@ spec:
               port: {{ .Values.service.port }}
             initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
             periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+            {{- if .Values.probes.readiness.timeoutSeconds }}
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            {{- end }}
+            {{- if .Values.probes.readiness.failureThreshold }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+            {{- end }}
+            {{- if .Values.probes.readiness.successThreshold }}
+            successThreshold: {{ .Values.probes.readiness.successThreshold }}
+            {{- end }}
           {{- end }}
           {{- if .Values.probes.startup }}
           startupProbe:
@@ -96,6 +114,9 @@ spec:
               port: {{ .Values.service.port }}
             periodSeconds: {{ .Values.probes.startup.periodSeconds }}
             failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+            {{- if .Values.probes.startup.timeoutSeconds }}
+            timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
+            {{- end }}
           {{- end }}
           {{- if .Values.securityContext }}
           securityContext:

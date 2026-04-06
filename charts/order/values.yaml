@@ -11,6 +11,7 @@ database:
   passwordKey: password
   databaseKey: database
 replicaCount: 2
+terminationGracePeriodSeconds: 45
 service:
   port: 5002
 serviceAccount:
@@ -38,14 +39,20 @@ probes:
     path: /healthz
     initialDelaySeconds: 10
     periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 3
   readiness:
-    path: /healthz
-    initialDelaySeconds: 5
-    periodSeconds: 5
+    path: /readyz
+    initialDelaySeconds: 2
+    periodSeconds: 2
+    timeoutSeconds: 1
+    failureThreshold: 1
+    successThreshold: 1
   startup:
     path: /healthz
     periodSeconds: 5
     failureThreshold: 30
+    timeoutSeconds: 2
 autoscaling:
   enabled: true
   minReplicas: 2

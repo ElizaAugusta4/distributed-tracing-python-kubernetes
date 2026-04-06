@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import requests
 
 import os
+import signal
 import time
 
 import psycopg
@@ -16,6 +17,17 @@ from common.metrics import setup_metrics
 
 app = Flask(__name__)
 orders = []
+
+_shutting_down = False
+
+
+def _handle_shutdown_signal(signum, frame):
+    global _shutting_down
+    _shutting_down = True
+
+
+signal.signal(signal.SIGTERM, _handle_shutdown_signal)
+signal.signal(signal.SIGINT, _handle_shutdown_signal)
 
 logger = setup_otel(app, "order-service")
 setup_metrics(app, "order-service")
@@ -239,6 +251,13 @@ def handle_exception(e):
 @app.route('/healthz', methods=['GET'])
 def healthz():
     return jsonify({"status": "ok"}), 200
+
+
+@app.route('/readyz', methods=['GET'])
+def readyz():
+    if _shutting_down:
+        return jsonify({"status": "shutting_down"}), 503
+    return jsonify({"status": "ready"}), 200
 
 
 if __name__ == "__main__":
