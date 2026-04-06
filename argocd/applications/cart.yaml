@@ -9,6 +9,10 @@ spec:
     repoURL:  https://github.com/ElizaAugusta4/distributed-tracing-python-kubernetes
     targetRevision: HEAD
     path: charts/cart
+    helm:
+      parameters:
+        - name: dependencyCheckUrls
+          value: "http://catalog:5000/healthz"
   destination:
     server: https://kubernetes.default.svc
     namespace: virtual-store
