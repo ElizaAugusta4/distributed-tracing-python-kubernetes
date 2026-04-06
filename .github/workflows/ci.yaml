@@ -30,3 +30,47 @@ jobs:
             helm template "ci-$c" "charts/$c" >/dev/null
             echo "::endgroup::"
           done
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trivy FS scan (services)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TRIVY_IMAGE="aquasec/trivy:0.50.1"
+          CACHE_DIR="${GITHUB_WORKSPACE}/.trivycache"
+          mkdir -p "$CACHE_DIR"
+
+          echo "::group::Generate SBOM (CycloneDX)"
+          docker run --rm \
+            -v "${GITHUB_WORKSPACE}:/workdir" \
+            -v "${CACHE_DIR}:/root/.cache/" \
+            -w /workdir \
+            "$TRIVY_IMAGE" fs \
+            --format cyclonedx \
+            --output sbom-services.cdx.json \
+            services
+          echo "::endgroup::"
+
+          echo "::group::Vulnerability scan (HIGH,CRITICAL)"
+          docker run --rm \
+            -v "${GITHUB_WORKSPACE}:/workdir" \
+            -v "${CACHE_DIR}:/root/.cache/" \
+            -w /workdir \
+            "$TRIVY_IMAGE" fs \
+            --scanners vuln \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            services
+          echo "::endgroup::"
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-services-cyclonedx
+          path: sbom-services.cdx.json

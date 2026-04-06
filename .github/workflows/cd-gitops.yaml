@@ -51,6 +51,71 @@ jobs:
           OWNER_LC: ${{ env.OWNER_LC }}
           GIT_SHA: ${{ github.sha }}
 
+      - name: Trivy scan images (HIGH,CRITICAL)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TRIVY_IMAGE="aquasec/trivy:0.50.1"
+          CACHE_DIR="${GITHUB_WORKSPACE}/.trivycache"
+          mkdir -p "$CACHE_DIR"
+
+          images=(
+            "ghcr.io/${OWNER_LC}/distributed-tracing-python-kubernetes/catalog:${GITHUB_SHA}"
+            "ghcr.io/${OWNER_LC}/distributed-tracing-python-kubernetes/cart:${GITHUB_SHA}"
+            "ghcr.io/${OWNER_LC}/distributed-tracing-python-kubernetes/order:${GITHUB_SHA}"
+          )
+
+          for img in "${images[@]}"; do
+            echo "::group::Scan $img"
+            docker run --rm \
+              -v "${CACHE_DIR}:/root/.cache/" \
+              "$TRIVY_IMAGE" image \
+              --severity HIGH,CRITICAL \
+              --exit-code 1 \
+              "$img"
+            echo "::endgroup::"
+          done
+
+      - name: Generate SBOM (CycloneDX)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TRIVY_IMAGE="aquasec/trivy:0.50.1"
+          CACHE_DIR="${GITHUB_WORKSPACE}/.trivycache"
+          mkdir -p "$CACHE_DIR"
+
+          images=(
+            "catalog"
+            "cart"
+            "order"
+          )
+
+          for name in "${images[@]}"; do
+            img="ghcr.io/${OWNER_LC}/distributed-tracing-python-kubernetes/${name}:${GITHUB_SHA}"
+            out="sbom-${name}.cdx.json"
+            echo "::group::SBOM $img"
+            docker run --rm \
+              -v "${GITHUB_WORKSPACE}:/workdir" \
+              -v "${CACHE_DIR}:/root/.cache/" \
+              -w /workdir \
+              "$TRIVY_IMAGE" image \
+              --format cyclonedx \
+              --output "$out" \
+              "$img"
+            echo "::endgroup::"
+          done
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-images-cyclonedx
+          path: |
+            sbom-catalog.cdx.json
+            sbom-cart.cdx.json
+            sbom-order.cdx.json
+
       - name: Update Helm values (image repo+tag)
         uses: mikefarah/yq@v4.44.3
         with:
