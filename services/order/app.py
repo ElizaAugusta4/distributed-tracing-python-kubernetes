@@ -8,12 +8,17 @@ import psycopg
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
+from opentelemetry import trace
+from opentelemetry.trace import SpanKind, Status, StatusCode
+
 from common.otel import setup_otel, get_trace_context_ids
 
 app = Flask(__name__)
 orders = []
 
 logger = setup_otel(app, "order-service")
+
+tracer = trace.get_tracer("order-service")
 
 CATALOG_URL = "http://catalog:5000/products"
 CART_URL = "http://cart:5001/cart"
@@ -39,7 +44,18 @@ def _get_db():
 
     dsn = f"postgresql://{user}:{password}@{host}:{port}/{name}"
     try:
-        DB = psycopg.connect(dsn, autocommit=True, row_factory=dict_row)
+        with tracer.start_as_current_span(
+            "db.connect",
+            kind=SpanKind.CLIENT,
+            attributes={
+                "db.system": "postgresql",
+                "db.name": name,
+                "net.peer.name": host,
+                "net.peer.port": int(port),
+                "peer.service": "postgres",
+            },
+        ):
+            DB = psycopg.connect(dsn, autocommit=True, row_factory=dict_row)
     except Exception as e:
         logger.warning(f"status_code=200 Banco indisponível, seguindo sem persistência: {e}")
         DB = None
@@ -90,15 +106,31 @@ def _record_dependency(to_service: str, method: str, url: str, status_code: int 
 
     trace_id, span_id = get_trace_context_ids()
     try:
-        with db.cursor() as cur:
-            cur.execute(
-                """
-                INSERT INTO dependencies(trace_id, span_id, from_service, to_service, method, url, status_code, latency_ms)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-                """,
-                (trace_id, span_id, "order-service", to_service, method, url, status_code, latency_ms),
-            )
+        with tracer.start_as_current_span(
+            "db.dependencies.insert",
+            kind=SpanKind.CLIENT,
+            attributes={
+                "db.system": "postgresql",
+                "db.operation": "INSERT",
+                "db.sql.table": "dependencies",
+                "peer.service": "postgres",
+            },
+        ) as span:
+            with db.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO dependencies(trace_id, span_id, from_service, to_service, method, url, status_code, latency_ms)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                    """,
+                    (trace_id, span_id, "order-service", to_service, method, url, status_code, latency_ms),
+                )
+            span.set_status(Status(StatusCode.OK))
     except Exception as e:
+        try:
+            span.record_exception(e)  # type: ignore[name-defined]
+            span.set_status(Status(StatusCode.ERROR))  # type: ignore[name-defined]
+        except Exception:
+            pass
         logger.warning(f"status_code=200 Falha ao registrar dependência no banco: {e}")
 
 
@@ -121,9 +153,19 @@ def list_orders():
     if db is None:
         return jsonify(orders)
 
-    with db.cursor() as cur:
-        cur.execute("SELECT id, user_id, items, status, trace_id, created_at FROM orders ORDER BY id DESC LIMIT 50")
-        rows = cur.fetchall()
+    with tracer.start_as_current_span(
+        "db.orders.select",
+        kind=SpanKind.CLIENT,
+        attributes={
+            "db.system": "postgresql",
+            "db.operation": "SELECT",
+            "db.sql.table": "orders",
+            "peer.service": "postgres",
+        },
+    ):
+        with db.cursor() as cur:
+            cur.execute("SELECT id, user_id, items, status, trace_id, created_at FROM orders ORDER BY id DESC LIMIT 50")
+            rows = cur.fetchall()
     return jsonify(rows)
 
 
@@ -157,16 +199,26 @@ def create_order():
         orders.append(order)
     else:
         try:
-            with db.cursor() as cur:
-                cur.execute(
-                    """
-                    INSERT INTO orders(user_id, items, status, trace_id)
-                    VALUES (%s, %s, %s, %s)
-                    RETURNING id
-                    """,
-                    (user_id, Jsonb(cart_items), order["status"], trace_id if trace_id != "-" else None),
-                )
-                row = cur.fetchone()
+            with tracer.start_as_current_span(
+                "db.orders.insert",
+                kind=SpanKind.CLIENT,
+                attributes={
+                    "db.system": "postgresql",
+                    "db.operation": "INSERT",
+                    "db.sql.table": "orders",
+                    "peer.service": "postgres",
+                },
+            ):
+                with db.cursor() as cur:
+                    cur.execute(
+                        """
+                        INSERT INTO orders(user_id, items, status, trace_id)
+                        VALUES (%s, %s, %s, %s)
+                        RETURNING id
+                        """,
+                        (user_id, Jsonb(cart_items), order["status"], trace_id if trace_id != "-" else None),
+                    )
+                    row = cur.fetchone()
             order["id"] = row["id"]
             order["trace_id"] = trace_id
         except Exception as e:
