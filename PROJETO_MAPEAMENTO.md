@@ -47,12 +47,13 @@ Este arquivo documenta o mapeamento e o progresso do projeto, que visa criar uma
 -  Adicionar o kube-prometheus-stack de observabilidade
 -  Migrar Datasourcers do Grafana anterior para o novo
 -  Migrar Dashboards para o kube-promtheus-stack
--  Criar SLIs e SLOs
 -  Montar Runbook, Playbook, Handbook
 -  GitOps com ArgoCD para deploy automatico
 -  Hardenizacao dos servicos (probes, resources, securityContext)
 -  Autoscaling e PDB por servico
 -  Adicionar as pipelines CI e CD no repositório 
+-  Adicionar Banco como dependência das aplicações
+-  SLOs e alertas (error-rate/latency) + políticas de burn rate
 ---
 ## 4. Critério de Saúde e Painel de Confiabilidade das APIs
 

@@ -1,0 +1,30 @@
+releaseLabel: kube-prometheus-stack
+
+services:
+  - name: catalog-service
+  - name: cart-service
+  - name: order-service
+
+slo:
+  errorRate:
+    objective: 0.999
+
+  latency:
+    # SLI: fraction of requests <= thresholdSeconds
+    objective: 0.99
+    thresholdSeconds: "0.5"
+
+  burnRate:
+    page:
+      shortWindow: 5m
+      longWindow: 1h
+      shortFactor: 14.4
+      longFactor: 6
+      for: 2m
+
+    ticket:
+      shortWindow: 2h
+      longWindow: 6h
+      shortFactor: 3
+      longFactor: 1
+      for: 15m

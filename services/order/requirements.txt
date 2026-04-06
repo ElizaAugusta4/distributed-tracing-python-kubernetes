@@ -1,5 +1,6 @@
 flask
 psycopg[binary]
+prometheus-client
 opentelemetry-api
 opentelemetry-sdk
 opentelemetry-exporter-otlp==1.23.0

@@ -16,7 +16,7 @@ loki:
 
   schemaConfig:
     configs:
-      - from: "2024-01-01"      # ← data recente, não 2020
+      - from: "2024-01-01"      
         store: boltdb-shipper
         object_store: filesystem
         schema: v11

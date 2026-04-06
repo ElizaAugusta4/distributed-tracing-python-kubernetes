@@ -1,11 +1,13 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 from common.otel import setup_otel
+from common.metrics import setup_metrics
 
 app = Flask(__name__)
 products = []
 
 logger = setup_otel(app, "catalog-service")
+setup_metrics(app, "catalog-service")
 
 
 @app.route('/products', methods=['GET'])

@@ -1,0 +1,22 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: order
+  labels:
+    app.kubernetes.io/name: order
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    release: {{ .Values.monitoring.releaseLabel | quote }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      app: order
+  endpoints:
+    - port: http
+      path: {{ .Values.monitoring.path | quote }}
+      interval: {{ .Values.monitoring.interval | quote }}
+      scrapeTimeout: {{ .Values.monitoring.scrapeTimeout | quote }}
+{{- end }}

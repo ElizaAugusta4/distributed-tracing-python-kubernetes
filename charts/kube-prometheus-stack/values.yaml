@@ -21,3 +21,15 @@ grafana:
       url: http://tempo:3200
       access: proxy
       isDefault: false
+
+prometheus:
+  prometheusSpec:
+    serviceMonitorNamespaceSelector: {}
+    serviceMonitorSelector:
+      matchLabels:
+        release: kube-prometheus-stack
+
+    ruleNamespaceSelector: {}
+    ruleSelector:
+      matchLabels:
+        release: kube-prometheus-stack

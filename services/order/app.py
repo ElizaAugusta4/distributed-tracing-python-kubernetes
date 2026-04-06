@@ -12,11 +12,13 @@ from opentelemetry import trace
 from opentelemetry.trace import SpanKind, Status, StatusCode
 
 from common.otel import setup_otel, get_trace_context_ids
+from common.metrics import setup_metrics
 
 app = Flask(__name__)
 orders = []
 
 logger = setup_otel(app, "order-service")
+setup_metrics(app, "order-service")
 
 tracer = trace.get_tracer("order-service")
 
