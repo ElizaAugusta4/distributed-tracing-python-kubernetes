@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-import requests
 
 import os
 import signal
@@ -13,6 +12,7 @@ from opentelemetry import trace
 from opentelemetry.trace import SpanKind, Status, StatusCode
 
 from common.otel import setup_otel, get_trace_context_ids
+from common.http_client import DEFAULT_TIMEOUT, http_request
 from common.metrics import setup_metrics
 
 app = Flask(__name__)
@@ -210,9 +210,20 @@ def _request_with_tracking(to_service: str, method: str, url: str, **kwargs):
     start = time.monotonic()
     status_code = None
     try:
-        resp = requests.request(method, url, **kwargs)
+        timeout = kwargs.pop("timeout", None)
+        if timeout is None:
+            timeout = DEFAULT_TIMEOUT
+
+        resp = http_request(method, url, timeout=timeout, **kwargs)
         status_code = resp.status_code
         return resp
+    except Exception as e:
+        trace_id, _ = get_trace_context_ids()
+        logger.warning(
+            f"status_code=503 dependency_error to_service={to_service} method={method} url={url} "
+            f"timeout={timeout} trace_id={trace_id} error={e}"
+        )
+        return None
     finally:
         elapsed_ms = int((time.monotonic() - start) * 1000)
         _record_dependency(to_service, method, url, status_code, elapsed_ms)
@@ -249,11 +260,11 @@ def create_order():
 
     if user_id:
         cart_resp = _request_with_tracking("cart-service", "GET", f"{CART_URL}/{user_id}")
-        if cart_resp.ok:
+        if cart_resp is not None and cart_resp.ok:
             cart_items = cart_resp.json()
 
     catalog_resp = _request_with_tracking("catalog-service", "GET", CATALOG_URL)
-    if catalog_resp.ok:
+    if catalog_resp is not None and catalog_resp.ok:
         products = catalog_resp.json()
         for item in cart_items:
             if item not in products:
