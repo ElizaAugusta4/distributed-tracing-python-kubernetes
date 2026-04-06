@@ -1,0 +1,31 @@
+resourceQuota:
+  enabled: true
+  name: virtual-store-resourcequota
+  hard:
+    pods: "30"
+    services: "20"
+    persistentvolumeclaims: "5"
+    configmaps: "50"
+    secrets: "50"
+    requests.cpu: "4"
+    requests.memory: "4Gi"
+    limits.cpu: "8"
+    limits.memory: "8Gi"
+
+limitRange:
+  enabled: true
+  name: virtual-store-limitrange
+  defaults:
+    request:
+      cpu: 100m
+      memory: 128Mi
+    limit:
+      cpu: 500m
+      memory: 256Mi
+  constraints:
+    min:
+      cpu: 10m
+      memory: 64Mi
+    max:
+      cpu: "2"
+      memory: 1Gi

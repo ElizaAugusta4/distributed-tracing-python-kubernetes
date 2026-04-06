@@ -1,0 +1,6 @@
+apiVersion: v2
+name: virtual-store-namespace-limits
+description: Namespace-level ResourceQuota and LimitRange for the virtual-store namespace.
+type: application
+version: 0.1.0
+appVersion: "1.0"

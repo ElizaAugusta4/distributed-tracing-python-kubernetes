@@ -1,0 +1,17 @@
+{{- if .Values.limitRange.enabled }}
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: {{ .Values.limitRange.name | quote }}
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+{{- toYaml .Values.limitRange.defaults.request | nindent 8 }}
+      default:
+{{- toYaml .Values.limitRange.defaults.limit | nindent 8 }}
+      min:
+{{- toYaml .Values.limitRange.constraints.min | nindent 8 }}
+      max:
+{{- toYaml .Values.limitRange.constraints.max | nindent 8 }}
+{{- end }}
