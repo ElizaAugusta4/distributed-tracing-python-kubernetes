@@ -1,5 +1,8 @@
 releaseLabel: kube-prometheus-stack
 
+operational:
+  namespace: virtual-store
+
 services:
   - name: catalog-service
   - name: cart-service

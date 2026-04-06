@@ -129,3 +129,53 @@ spec:
             summary: "High latency-budget burn (ticket)"
             description: "{{ $svc.name }} sustained latency-budget burn ({{ $.Values.slo.latency.objective }} under {{ $.Values.slo.latency.thresholdSeconds }}s)."
 {{- end }}
+
+    - name: virtual-store.operational
+      rules:
+        - alert: KubePodCrashLooping
+          expr: |
+            max by (namespace, pod, container) (
+              kube_pod_container_status_waiting_reason{namespace={{ .Values.operational.namespace | quote }}, reason="CrashLoopBackOff"}
+            ) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod em CrashLoopBackOff"
+            description: "Pod/container está em CrashLoopBackOff no namespace {{ .Values.operational.namespace }}."
+
+        - alert: KubeContainerHighRestartRate
+          expr: |
+            sum by (namespace, pod, container) (
+              increase(kube_pod_container_status_restarts_total{namespace={{ .Values.operational.namespace | quote }}}[10m])
+            ) > 3
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Muitos restarts de container"
+            description: "Container reiniciou mais de 3x em 10m no namespace {{ .Values.operational.namespace }}."
+
+        - alert: KubePodPending
+          expr: |
+            max by (namespace, pod) (
+              kube_pod_status_phase{namespace={{ .Values.operational.namespace | quote }}, phase="Pending"}
+            ) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod em Pending"
+            description: "Pod está Pending por mais de 10m no namespace {{ .Values.operational.namespace }}."
+
+        - alert: KubeHpaMaxedOut
+          expr: |
+            kube_hpa_status_desired_replicas{namespace={{ .Values.operational.namespace | quote }}}
+            ==
+            kube_hpa_spec_max_replicas{namespace={{ .Values.operational.namespace | quote }}}
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "HPA no máximo"
+            description: "HPA desejando o número máximo de réplicas por 15m no namespace {{ .Values.operational.namespace }}."
