@@ -67,4 +67,39 @@ Para deixar o lab mais realista e reduzir risco de "noisy neighbor" dentro do na
 - `kubectl -n virtual-store describe resourcequota virtual-store-resourcequota`
 - `kubectl -n virtual-store describe limitrange virtual-store-limitrange`
 
+## 6. Baseline de Rede (NetworkPolicy)
+
+Objetivo: começar com um baseline simples (default-deny) e liberar apenas o tráfego necessário.
+
+### Onde configurar
+
+- Chart: `charts/virtual-store-networkpolicy`
+- Valores: `charts/virtual-store-networkpolicy/values.yaml`
+- Aplicação GitOps (ArgoCD): `argocd/applications/virtual-store-networkpolicy.yaml`
+
+### Regras incluídas (baseline)
+
+- **Default deny** (Ingress + Egress) para todos os pods do namespace `virtual-store`
+- **Allow intra-namespace** (TCP: 5000/5001/5002/5432)
+- **Allow DNS egress** para `kube-system` (kube-dns/CoreDNS)
+- **Allow Tempo egress** para `tempo` no namespace `observability` (TCP 4318)
+- **Allow observability ingress** (Prometheus scrape) a partir de `observability` (TCP 5000/5001/5002)
+- **Allow node ingress (kind)** para probes e `kubectl port-forward` (por `ipBlock` configurável)
+
+### Observação importante (Kind)
+
+O Kind com CNI padrão pode **não aplicar/enforçar** NetworkPolicy. Se você quiser validar enforcement de fato, instale um CNI que suporte NetworkPolicy (ex.: Calico) antes dos testes.
+
+### Como validar
+
+1) Ver recursos criados:
+- `kubectl -n virtual-store get networkpolicy`
+
+2) Validar fluxo do app:
+- `kubectl -n virtual-store port-forward svc/order 5002:5002`
+- gerar requests e checar `/healthz`/`/readyz`
+
+3) Se probes/port-forward quebrarem:
+- ajuste `allowNodeIngress.cidrs` em `charts/virtual-store-networkpolicy/values.yaml` com base em `kubectl get nodes -o wide`
+
 ---

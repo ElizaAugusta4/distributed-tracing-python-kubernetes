@@ -1,0 +1,22 @@
+{{- if and .Values.enabled .Values.allowTempoEgress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: virtual-store-allow-tempo-egress
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.allowTempoEgress.namespace | quote }}
+          podSelector:
+{{- toYaml .Values.allowTempoEgress.podSelector | nindent 12 }}
+      ports:
+{{- range .Values.allowTempoEgress.ports }}
+        - protocol: TCP
+          port: {{ . }}
+{{- end }}
+{{- end }}

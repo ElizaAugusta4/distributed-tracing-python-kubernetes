@@ -1,0 +1,53 @@
+enabled: true
+
+# Default-deny all pods in the namespace (ingress + egress).
+defaultDeny:
+  enabled: true
+
+# Allow intra-namespace service-to-service traffic on these ports.
+allowIntraNamespace:
+  enabled: true
+  ports:
+    - 5000
+    - 5001
+    - 5002
+    - 5432
+
+# Allow Prometheus (observability namespace) to scrape virtual-store services.
+allowObservabilityIngress:
+  enabled: true
+  namespace: observability
+  ports:
+    - 5000
+    - 5001
+    - 5002
+
+# Allow services to export traces to Tempo (observability namespace).
+allowTempoEgress:
+  enabled: true
+  namespace: observability
+  podSelector:
+    matchLabels:
+      app: tempo
+  ports:
+    - 4318
+
+# Allow DNS egress to kube-dns/CoreDNS.
+allowDnsEgress:
+  enabled: true
+  namespace: kube-system
+  podSelector:
+    matchLabels:
+      k8s-app: kube-dns
+
+# Allow kubelet probes + kubectl port-forward (source IP is the node).
+# For kind, node Internal-IP usually is 172.18.0.x (Docker network). Confirm via: kubectl get nodes -o wide
+allowNodeIngress:
+  enabled: true
+  cidrs:
+    - 172.18.0.0/16
+  ports:
+    - 5000
+    - 5001
+    - 5002
+    - 5432

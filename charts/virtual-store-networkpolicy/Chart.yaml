@@ -1,0 +1,6 @@
+apiVersion: v2
+name: virtual-store-networkpolicy
+description: Baseline NetworkPolicies for the virtual-store namespace (default deny + required allows).
+type: application
+version: 0.1.0
+appVersion: "1.0"

@@ -1,0 +1,27 @@
+{{- if and .Values.enabled .Values.allowIntraNamespace.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: virtual-store-allow-intra-namespace
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector: {}
+      ports:
+{{- range .Values.allowIntraNamespace.ports }}
+        - protocol: TCP
+          port: {{ . }}
+{{- end }}
+  egress:
+    - to:
+        - podSelector: {}
+      ports:
+{{- range .Values.allowIntraNamespace.ports }}
+        - protocol: TCP
+          port: {{ . }}
+{{- end }}
+{{- end }}
